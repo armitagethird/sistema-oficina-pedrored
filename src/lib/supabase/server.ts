@@ -1,4 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import type { Database } from "@/lib/supabase/database.types";
 
@@ -24,4 +25,21 @@ export async function createClient() {
       },
     },
   );
+}
+
+/**
+ * Cliente com service-role key — bypassa RLS.
+ * USAR APENAS em rotas server-only que validaram autorização (ex: cron com CRON_SECRET).
+ */
+export function createServiceRoleClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !serviceKey) {
+    throw new Error(
+      "SUPABASE_SERVICE_ROLE_KEY/URL não configurados — service-role indisponível",
+    );
+  }
+  return createSupabaseClient<Database>(url, serviceKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
 }
