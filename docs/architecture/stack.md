@@ -49,7 +49,8 @@
 
 | Dependência | Versão | Justificativa |
 |-------------|--------|---------------|
-| `@ducanh2912/next-pwa` | latest | Fork mantido do `next-pwa` compatível com App Router |
+| `manifest.webmanifest` + ícones | nativo | Instalável (Add to Home) funciona só com manifest + ícones — Sprint 0 entrega isso. |
+| Service Worker | adiar | `@ducanh2912/next-pwa` injeta webpack plugin, incompatível com Turbopack (default no Next 16). Avaliar `@serwist/next` ou implementação manual em sprint posterior se cache offline virar necessidade real. |
 
 ## Testes
 
