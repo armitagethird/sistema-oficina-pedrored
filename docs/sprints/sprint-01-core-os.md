@@ -4,7 +4,7 @@
 
 ## Status
 
-⚪ Pendente.
+✅ Validada por Romero (proxy) em 2026-05-11. Pedro ainda não testou em produção real — a primeira sessão dele será via PWA quando tivermos tempo de campo. Eventuais regressões viram phase patch.
 
 ## Contexto
 
@@ -472,7 +472,46 @@ src/
 
 ## Progresso
 
-(atualize)
+### 2026-05-11 — Implementação concluída
+
+**Schema (Wave 1):**
+- Migration `20260520000000_init_ordens_servico.sql` aplicada no remoto.
+- Enums `os_status`, `peca_origem`, `peca_status`, `foto_momento` criados.
+- Tabelas `ordens_servico`, `os_servicos`, `os_pecas`, `os_fotos` criadas com RLS authenticated.
+- Triggers: `recalcula_totais_os`, `trg_os_marca_fechado_em`, `set_atualizado_em` em `ordens_servico`.
+- Bucket Storage `os-fotos` privado + policies authenticated.
+- Tipos TS regerados via `pnpm db:gen` (config switched para `--linked`).
+
+**Helpers shared (Wave 2):** `MoneyInput`, `ItemizedList`, `useSupabaseSignedUrl`, `EmptyState`, `LoadingSkeleton` variants.
+
+**Feature clientes (Wave 3):** schemas zod com normalizer (string vazia → null), queries (`list/get/search`), actions (`create/update/softDelete`). Componentes `ClienteForm` (RHF+zod), `ClienteCombobox` (com criar inline), `ClienteCard`. Páginas `/app/clientes`, `/novo`, `/[id]` (com lista de veículos integrada), `/[id]/editar`.
+
+**Feature veiculos (Wave 4):** schemas zod com regra "modelo_id OU modelo_custom" + normalizer (uppercase placa). Queries (`listVwModelos/searchVwModelos/listVeiculosByCliente/getVeiculo/listKmTimelineVeiculo`), actions. Componentes `VwModeloCombobox`, `VeiculoForm` (com fallback custom), `VeiculoSelector` (picker do wizard), `VeiculoCard`, `KmTimeline`. Páginas `/app/veiculos/novo?cliente_id=…`, `/[id]`, `/[id]/editar`.
+
+**Feature ordens — domínio (Wave 5a):** state machine de status com 12 testes (transições válidas, terminais entregue/cancelada). Schemas zod para OS create, header update, mudar status, servico, peca, mudar status peça, upload foto. Queries (`listOS`, `getOSDetalhe`, `contadoresDashboard`, `listOSRecentes`, `listOSByVeiculo`). 12 actions (create OS, update header, mudar status, add/update/remove servico, add/update/remove/mudar status peca, upload/remove foto).
+
+**Feature ordens — UI (Wave 5b):** `OsStatusBadge`, `OsListMobile`/`OsListTable` (tanstack), `OsWizard` (3 passos cliente→veiculo→problema), `OsDetalheTabs` (Geral/Serviços/Peças/Fotos), `OsServicosItemized`, `OsPecasItemized` (com select origem/status, link ML condicional, totais custo/venda/margem), `OsFotoUploader` (input capture environment), `OsFotosGrid` (signed URLs), `OsStatusChanger` (dropdown + dialog km saída), `OsHeaderEditor` (bloqueia entregue/cancelada). Páginas `/app/os`, `/nova`, `/[id]`.
+
+**Dashboard + docs (Wave 6):** Dashboard com 4 cards de contadores (aberta/em_andamento/aguardando_peca/pronta) linkando pra filtros + 5 OS recentes + atalhos. E2E Playwright smoke (skip por default, ativa com `E2E_PEDRO_EMAIL`/`E2E_PEDRO_SENHA`). `docs/architecture/data-model.md` atualizado com Sprint 1.
+
+**Métricas:**
+- 6 test files, 57 vitest tests passando (state machine + schemas zod + helpers)
+- typecheck verde
+- lint verde
+- build verde — 12 rotas geradas
+
+### Pendente para validação manual (Pedro)
+
+- [ ] CRUD cliente funciona no celular (375x667)
+- [ ] CRUD veículo funciona (combobox VW + fallback custom)
+- [ ] Wizard OS abre OS válida em <30s
+- [ ] Adicionar/remover serviço/peça atualiza total automaticamente (trigger SQL)
+- [ ] Upload foto via câmera celular (capture="environment") salva e exibe
+- [ ] State machine: tentar mudar de "entregue" → "aberta" falha com erro amigável
+- [ ] Filtros da listagem funcionam (status, busca por nome cliente/placa/#)
+- [ ] Dashboard mostra contadores corretos
+- [ ] `fechado_em` preenche automaticamente quando vai pra "entregue" (testar via DB)
+- [ ] Pedro cadastra 2 clientes reais + veículos + abre OS pra cada + tira foto entrada
 
 ## Referências
 

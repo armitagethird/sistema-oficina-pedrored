@@ -6,13 +6,34 @@
 
 ## Estado atual
 
-**Sprint 0 aplicado em 2026-05-11.** Schema base no Supabase remoto (`fcaxivdvhgekomvwbrvr`, region `sa-east-1`).
+**Sprint 0 aplicado em 2026-05-11. Sprint 1 aplicado em 2026-05-11.** Schema no Supabase remoto (`fcaxivdvhgekomvwbrvr`, region `sa-east-1`).
 
 ### Tabelas
 
 - **`vw_modelos`** (24 rows seed) — `id uuid`, `modelo text`, `motor text`, `combustivel text default 'flex'`, `ano_inicio int?`, `ano_fim int?`, `criado_em timestamptz`. `unique(modelo, motor)`. RLS: `vw_modelos_authenticated_all` (authenticated→ALL). Index: `idx_vw_modelos_modelo`.
 - **`clientes`** — `id uuid`, `nome text not null`, `telefone text?`, `email text?`, `cpf text?`, `endereco jsonb?` (`{rua, numero, bairro, cidade, cep, complemento}`), `observacoes text?`, `criado_em`, `atualizado_em` (trigger `set_atualizado_em`), `deletado_em timestamptz?` (soft delete). RLS: `clientes_authenticated_all`. Indexes parciais (`where deletado_em is null`): `idx_clientes_nome`, `idx_clientes_telefone`.
 - **`veiculos`** — `id uuid`, `cliente_id uuid not null` → `clientes(id) ON DELETE RESTRICT`, `modelo_id uuid?` → `vw_modelos(id) ON DELETE SET NULL`, `modelo_custom text?`, `motor text?`, `ano int?`, `placa text?`, `cor text?`, `km_atual int default 0`, `observacoes text?`, timestamps + soft delete. Constraint check: `modelo_id IS NOT NULL OR modelo_custom IS NOT NULL`. RLS: `veiculos_authenticated_all`. Indexes parciais: `idx_veiculos_cliente`, `idx_veiculos_placa`.
+- **`ordens_servico`** — `id uuid`, `numero serial unique`, `cliente_id uuid not null` → `clientes(id) ON DELETE RESTRICT`, `veiculo_id uuid not null` → `veiculos(id) ON DELETE RESTRICT`, `status os_status not null default 'aberta'`, `descricao_problema text not null`, `km_entrada int?`, `km_saida int?`, `total_servicos/total_pecas/total_geral numeric(12,2) default 0` (denormalizados via trigger), `observacoes text?`, timestamps + soft delete, `fechado_em timestamptz?` (preenchido via trigger ao virar `entregue`). RLS: `os_authenticated_all`. Indexes parciais por status, cliente, veiculo, criado_em desc.
+- **`os_servicos`** — `id uuid`, `os_id uuid not null` → `ordens_servico(id) ON DELETE CASCADE`, `descricao text`, `valor_unitario numeric(12,2) check >= 0`, `quantidade numeric(8,2) check > 0`, `subtotal numeric(12,2) generated stored = valor_unitario * quantidade`, `ordem int default 0`, `criado_em`. RLS authenticated. Index `idx_os_servicos_os`.
+- **`os_pecas`** — `id uuid`, `os_id uuid not null cascade`, `descricao text`, `origem peca_origem default 'fornecedor'`, `custo_unitario / preco_venda_unitario numeric(12,2)`, `quantidade numeric(8,2) > 0`, `subtotal_venda numeric(12,2) generated stored`, `link_ml text?`, `fornecedor_nome text?` (FK estruturada vem na Sprint 2), `status peca_status default 'pendente'`, `ordem int`, `criado_em`. RLS authenticated. Indexes `idx_os_pecas_os`, `idx_os_pecas_status`.
+- **`os_fotos`** — `id uuid`, `os_id uuid not null cascade`, `storage_path text` (referencia bucket `os-fotos`), `momento foto_momento`, `legenda text?`, `criado_em`. RLS authenticated. Index `idx_os_fotos_os`.
+
+### Enums (Sprint 1)
+
+- `os_status` — `aberta | em_andamento | aguardando_peca | pronta | entregue | cancelada`
+- `peca_origem` — `estoque | fornecedor | mercado_livre_afiliado` (`estoque` ainda não conecta — Sprint 3)
+- `peca_status` — `pendente | comprada | recebida | aplicada`
+- `foto_momento` — `entrada | saida | durante`
+
+### Funções / triggers (Sprint 1)
+
+- `recalcula_totais_os(p_os_id uuid)` — recalcula `total_servicos`, `total_pecas`, `total_geral` da OS via `sum(subtotal)` e `sum(subtotal_venda)` dos filhos.
+- `trg_recalcula_totais_os()` — trigger after insert/update/delete em `os_servicos` e `os_pecas` que chama `recalcula_totais_os` com o `os_id` afetado.
+- `trg_os_marca_fechado_em()` — before update em `ordens_servico` que seta `fechado_em = now()` ao virar `entregue` e zera quando muda pra outro status.
+
+### Storage
+
+- Bucket `os-fotos` (privado), criado via migration. Policies em `storage.objects`: `os_fotos_select_auth`, `os_fotos_insert_auth`, `os_fotos_delete_auth` — todos restritos a `authenticated` no bucket `os-fotos`. Caminhos salvos como `${osId}/${nanoid()}.${ext}`. URLs servidas via `createSignedUrl` (TTL 1h).
 
 ### Função compartilhada
 

@@ -7,7 +7,7 @@
 | # | Sprint | Status | Branch / PR | Validado por Pedro |
 |---|--------|--------|-------------|---------------------|
 | 0 | Setup | ✅ validada | main | ✅ Romero (proxy) 2026-05-11 |
-| 1 | Core OS | 🟡 a iniciar | — | — |
+| 1 | Core OS | ✅ validada | — | ✅ Romero (proxy) 2026-05-11 |
 | 2 | Financeiro | ⚪ pendente | — | — |
 | 3 | Estoque | ⚪ pendente | — | — |
 | 4 | Agenda | ⚪ pendente | — | — |
@@ -15,7 +15,7 @@
 | 6 | PedroRed Store (pública) | ⚪ pendente | — | — |
 | 7 | IA + Dashboards | ⚪ pendente | — | — |
 
-**Sprint corrente: 1 — Core OS.**
+**Sprint corrente: 2 — Financeiro.** (Sprint 1 validada por Romero em 2026-05-11; Pedro ainda não testou em produção.)
 
 **Deploy de produção:** https://sistema-oficina-pedrored.vercel.app/ (Vercel, conectado a `armitagethird/sistema-oficina-pedrored` em GitHub).
 

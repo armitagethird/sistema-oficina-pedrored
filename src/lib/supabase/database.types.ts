@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -11,6 +11,31 @@ export type Database = {
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.5"
+  }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
   public: {
     Tables: {
@@ -52,6 +77,210 @@ export type Database = {
           telefone?: string | null
         }
         Relationships: []
+      }
+      ordens_servico: {
+        Row: {
+          atualizado_em: string
+          cliente_id: string
+          criado_em: string
+          deletado_em: string | null
+          descricao_problema: string
+          fechado_em: string | null
+          id: string
+          km_entrada: number | null
+          km_saida: number | null
+          numero: number
+          observacoes: string | null
+          status: Database["public"]["Enums"]["os_status"]
+          total_geral: number
+          total_pecas: number
+          total_servicos: number
+          veiculo_id: string
+        }
+        Insert: {
+          atualizado_em?: string
+          cliente_id: string
+          criado_em?: string
+          deletado_em?: string | null
+          descricao_problema: string
+          fechado_em?: string | null
+          id?: string
+          km_entrada?: number | null
+          km_saida?: number | null
+          numero?: number
+          observacoes?: string | null
+          status?: Database["public"]["Enums"]["os_status"]
+          total_geral?: number
+          total_pecas?: number
+          total_servicos?: number
+          veiculo_id: string
+        }
+        Update: {
+          atualizado_em?: string
+          cliente_id?: string
+          criado_em?: string
+          deletado_em?: string | null
+          descricao_problema?: string
+          fechado_em?: string | null
+          id?: string
+          km_entrada?: number | null
+          km_saida?: number | null
+          numero?: number
+          observacoes?: string | null
+          status?: Database["public"]["Enums"]["os_status"]
+          total_geral?: number
+          total_pecas?: number
+          total_servicos?: number
+          veiculo_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ordens_servico_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ordens_servico_veiculo_id_fkey"
+            columns: ["veiculo_id"]
+            isOneToOne: false
+            referencedRelation: "veiculos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      os_fotos: {
+        Row: {
+          criado_em: string
+          id: string
+          legenda: string | null
+          momento: Database["public"]["Enums"]["foto_momento"]
+          os_id: string
+          storage_path: string
+        }
+        Insert: {
+          criado_em?: string
+          id?: string
+          legenda?: string | null
+          momento: Database["public"]["Enums"]["foto_momento"]
+          os_id: string
+          storage_path: string
+        }
+        Update: {
+          criado_em?: string
+          id?: string
+          legenda?: string | null
+          momento?: Database["public"]["Enums"]["foto_momento"]
+          os_id?: string
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "os_fotos_os_id_fkey"
+            columns: ["os_id"]
+            isOneToOne: false
+            referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      os_pecas: {
+        Row: {
+          criado_em: string
+          custo_unitario: number
+          descricao: string
+          fornecedor_nome: string | null
+          id: string
+          link_ml: string | null
+          ordem: number
+          origem: Database["public"]["Enums"]["peca_origem"]
+          os_id: string
+          preco_venda_unitario: number
+          quantidade: number
+          status: Database["public"]["Enums"]["peca_status"]
+          subtotal_venda: number | null
+        }
+        Insert: {
+          criado_em?: string
+          custo_unitario?: number
+          descricao: string
+          fornecedor_nome?: string | null
+          id?: string
+          link_ml?: string | null
+          ordem?: number
+          origem?: Database["public"]["Enums"]["peca_origem"]
+          os_id: string
+          preco_venda_unitario: number
+          quantidade?: number
+          status?: Database["public"]["Enums"]["peca_status"]
+          subtotal_venda?: number | null
+        }
+        Update: {
+          criado_em?: string
+          custo_unitario?: number
+          descricao?: string
+          fornecedor_nome?: string | null
+          id?: string
+          link_ml?: string | null
+          ordem?: number
+          origem?: Database["public"]["Enums"]["peca_origem"]
+          os_id?: string
+          preco_venda_unitario?: number
+          quantidade?: number
+          status?: Database["public"]["Enums"]["peca_status"]
+          subtotal_venda?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "os_pecas_os_id_fkey"
+            columns: ["os_id"]
+            isOneToOne: false
+            referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      os_servicos: {
+        Row: {
+          criado_em: string
+          descricao: string
+          id: string
+          ordem: number
+          os_id: string
+          quantidade: number
+          subtotal: number | null
+          valor_unitario: number
+        }
+        Insert: {
+          criado_em?: string
+          descricao: string
+          id?: string
+          ordem?: number
+          os_id: string
+          quantidade?: number
+          subtotal?: number | null
+          valor_unitario: number
+        }
+        Update: {
+          criado_em?: string
+          descricao?: string
+          id?: string
+          ordem?: number
+          os_id?: string
+          quantidade?: number
+          subtotal?: number | null
+          valor_unitario?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "os_servicos_os_id_fkey"
+            columns: ["os_id"]
+            isOneToOne: false
+            referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       veiculos: {
         Row: {
@@ -151,10 +380,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      recalcula_totais_os: { Args: { p_os_id: string }; Returns: undefined }
     }
     Enums: {
-      [_ in never]: never
+      foto_momento: "entrada" | "saida" | "durante"
+      os_status:
+        | "aberta"
+        | "em_andamento"
+        | "aguardando_peca"
+        | "pronta"
+        | "entregue"
+        | "cancelada"
+      peca_origem: "estoque" | "fornecedor" | "mercado_livre_afiliado"
+      peca_status: "pendente" | "comprada" | "recebida" | "aplicada"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -280,7 +518,22 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  public: {
+  graphql_public: {
     Enums: {},
+  },
+  public: {
+    Enums: {
+      foto_momento: ["entrada", "saida", "durante"],
+      os_status: [
+        "aberta",
+        "em_andamento",
+        "aguardando_peca",
+        "pronta",
+        "entregue",
+        "cancelada",
+      ],
+      peca_origem: ["estoque", "fornecedor", "mercado_livre_afiliado"],
+      peca_status: ["pendente", "comprada", "recebida", "aplicada"],
+    },
   },
 } as const
