@@ -6,7 +6,7 @@
 
 ## Estado atual
 
-**Sprint 0 aplicado em 2026-05-11. Sprint 1 aplicado em 2026-05-11.** Schema no Supabase remoto (`fcaxivdvhgekomvwbrvr`, region `sa-east-1`).
+**Sprint 0/1/2 aplicados em 2026-05-11.** Schema no Supabase remoto (`fcaxivdvhgekomvwbrvr`, region `sa-east-1`).
 
 ### Tabelas
 
@@ -17,6 +17,11 @@
 - **`os_servicos`** — `id uuid`, `os_id uuid not null` → `ordens_servico(id) ON DELETE CASCADE`, `descricao text`, `valor_unitario numeric(12,2) check >= 0`, `quantidade numeric(8,2) check > 0`, `subtotal numeric(12,2) generated stored = valor_unitario * quantidade`, `ordem int default 0`, `criado_em`. RLS authenticated. Index `idx_os_servicos_os`.
 - **`os_pecas`** — `id uuid`, `os_id uuid not null cascade`, `descricao text`, `origem peca_origem default 'fornecedor'`, `custo_unitario / preco_venda_unitario numeric(12,2)`, `quantidade numeric(8,2) > 0`, `subtotal_venda numeric(12,2) generated stored`, `link_ml text?`, `fornecedor_nome text?` (FK estruturada vem na Sprint 2), `status peca_status default 'pendente'`, `ordem int`, `criado_em`. RLS authenticated. Indexes `idx_os_pecas_os`, `idx_os_pecas_status`.
 - **`os_fotos`** — `id uuid`, `os_id uuid not null cascade`, `storage_path text` (referencia bucket `os-fotos`), `momento foto_momento`, `legenda text?`, `criado_em`. RLS authenticated. Index `idx_os_fotos_os`.
+- **`fornecedores`** — `id uuid`, `nome text not null`, `telefone/email/cnpj/endereco/observacoes text?`, timestamps + soft delete. RLS authenticated. Index parcial `idx_fornecedores_nome` (where deletado_em null).
+- **`pedidos_fornecedor`** — `id uuid`, `numero serial unique`, `fornecedor_id uuid not null` → `fornecedores(id) ON DELETE RESTRICT`, `os_id uuid?` → `ordens_servico(id) ON DELETE SET NULL`, `status pedido_fornecedor_status default 'cotacao'`, `valor_total numeric(12,2) default 0` (denormalizado via trigger), `data_compra/data_recebimento date?`, `observacoes text?`, timestamps. RLS authenticated. Indexes em status, os, fornecedor.
+- **`pedido_fornecedor_itens`** — `id uuid`, `pedido_id uuid not null cascade`, `descricao text not null`, `custo_unitario numeric(12,2) check >= 0`, `quantidade numeric(8,2) > 0`, `subtotal numeric(12,2) generated stored = custo_unitario * quantidade`, `os_peca_id uuid?` → `os_pecas(id) ON DELETE SET NULL`, `criado_em`. RLS authenticated. Trigger recalcula `pedidos_fornecedor.valor_total` em insert/update/delete.
+- **`pagamentos`** — `id uuid`, `os_id uuid not null` → `ordens_servico(id) ON DELETE RESTRICT`, `ordem int default 1`, `valor numeric(12,2) > 0`, `metodo pagamento_metodo not null`, `status pagamento_status default 'pendente'`, `data_prevista date?`, `data_paga timestamptz?`, `observacoes text?`, timestamps. RLS authenticated. Indexes em os, status, data_prevista (parcial onde status=pendente). Trigger `trg_pagamentos_marca_data_paga` preenche/zera `data_paga` quando status entra/sai de 'pago'.
+- **`links_afiliado_enviados`** — `id uuid`, `cliente_id uuid not null` → `clientes(id) ON DELETE RESTRICT`, `os_id uuid?` → `ordens_servico(id) ON DELETE SET NULL`, `link text not null`, `descricao_peca text not null`, `preco_estimado/comissao_estimada/comissao_recebida numeric(12,2)?`, `status link_afiliado_status default 'enviado'`, `data_envio timestamptz default now()`, `data_compra/data_comissao timestamptz?`, `observacoes text?`. RLS authenticated. Indexes em cliente, status, os.
 
 ### Enums (Sprint 1)
 
@@ -25,11 +30,30 @@
 - `peca_status` — `pendente | comprada | recebida | aplicada`
 - `foto_momento` — `entrada | saida | durante`
 
+### Enums (Sprint 2)
+
+- `pagamento_metodo` — `pix | dinheiro | cartao | transferencia` (cartão preparado mas sem fluxo no MVP)
+- `pagamento_status` — `pendente | pago | atrasado | cancelado`
+- `pedido_fornecedor_status` — `cotacao | comprado | recebido | cancelado`
+- `link_afiliado_status` — `enviado | cliente_comprou | comissao_recebida | cancelado`
+
 ### Funções / triggers (Sprint 1)
 
 - `recalcula_totais_os(p_os_id uuid)` — recalcula `total_servicos`, `total_pecas`, `total_geral` da OS via `sum(subtotal)` e `sum(subtotal_venda)` dos filhos.
 - `trg_recalcula_totais_os()` — trigger after insert/update/delete em `os_servicos` e `os_pecas` que chama `recalcula_totais_os` com o `os_id` afetado.
 - `trg_os_marca_fechado_em()` — before update em `ordens_servico` que seta `fechado_em = now()` ao virar `entregue` e zera quando muda pra outro status.
+
+### Funções / triggers (Sprint 2)
+
+- `recalcula_total_pedido_fornecedor(p_pedido_id uuid)` — atualiza `pedidos_fornecedor.valor_total` somando `subtotal` dos itens.
+- `trg_pedido_itens_recalc()` — trigger after insert/update/delete em `pedido_fornecedor_itens` chamando a função acima.
+- `trg_pagamentos_marca_data_paga()` — trigger before insert/update em `pagamentos`: quando status entra em `pago` seta `data_paga = now()` (se não veio explícito); quando sai de `pago`, zera `data_paga`.
+- `marca_pagamentos_atrasados()` returns int — chamada diária pelo Vercel Cron `/api/cron/financeiro/marca-atrasados`; move `pagamentos` com `status='pendente' AND data_prevista < current_date` para `'atrasado'`.
+
+### Views (Sprint 2)
+
+- `view_contas_a_receber` — agrega por cliente (join `clientes → ordens_servico → pagamentos`): `parcelas_em_aberto`, `parcelas_atrasadas`, `total_em_aberto`, `total_atrasado`, `proxima_data`. `HAVING parcelas_em_aberto > 0`.
+- `view_capital_investido` — pedidos com `status in ('comprado','recebido')` cujo cliente ainda não pagou tudo (ou que não têm OS — compra estoque puro): traz `valor_total`, `fornecedor_nome`, `os_total`, `cliente_pagou`.
 
 ### Storage
 
