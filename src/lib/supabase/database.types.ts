@@ -78,6 +78,122 @@ export type Database = {
         }
         Relationships: []
       }
+      fornecedores: {
+        Row: {
+          atualizado_em: string
+          cnpj: string | null
+          criado_em: string
+          deletado_em: string | null
+          email: string | null
+          endereco: string | null
+          id: string
+          nome: string
+          observacoes: string | null
+          telefone: string | null
+        }
+        Insert: {
+          atualizado_em?: string
+          cnpj?: string | null
+          criado_em?: string
+          deletado_em?: string | null
+          email?: string | null
+          endereco?: string | null
+          id?: string
+          nome: string
+          observacoes?: string | null
+          telefone?: string | null
+        }
+        Update: {
+          atualizado_em?: string
+          cnpj?: string | null
+          criado_em?: string
+          deletado_em?: string | null
+          email?: string | null
+          endereco?: string | null
+          id?: string
+          nome?: string
+          observacoes?: string | null
+          telefone?: string | null
+        }
+        Relationships: []
+      }
+      links_afiliado_enviados: {
+        Row: {
+          cliente_id: string
+          comissao_estimada: number | null
+          comissao_recebida: number | null
+          data_comissao: string | null
+          data_compra: string | null
+          data_envio: string
+          descricao_peca: string
+          id: string
+          link: string
+          observacoes: string | null
+          os_id: string | null
+          preco_estimado: number | null
+          status: Database["public"]["Enums"]["link_afiliado_status"]
+        }
+        Insert: {
+          cliente_id: string
+          comissao_estimada?: number | null
+          comissao_recebida?: number | null
+          data_comissao?: string | null
+          data_compra?: string | null
+          data_envio?: string
+          descricao_peca: string
+          id?: string
+          link: string
+          observacoes?: string | null
+          os_id?: string | null
+          preco_estimado?: number | null
+          status?: Database["public"]["Enums"]["link_afiliado_status"]
+        }
+        Update: {
+          cliente_id?: string
+          comissao_estimada?: number | null
+          comissao_recebida?: number | null
+          data_comissao?: string | null
+          data_compra?: string | null
+          data_envio?: string
+          descricao_peca?: string
+          id?: string
+          link?: string
+          observacoes?: string | null
+          os_id?: string | null
+          preco_estimado?: number | null
+          status?: Database["public"]["Enums"]["link_afiliado_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "links_afiliado_enviados_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "links_afiliado_enviados_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "view_contas_a_receber"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "links_afiliado_enviados_os_id_fkey"
+            columns: ["os_id"]
+            isOneToOne: false
+            referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "links_afiliado_enviados_os_id_fkey"
+            columns: ["os_id"]
+            isOneToOne: false
+            referencedRelation: "view_capital_investido"
+            referencedColumns: ["os_id"]
+          },
+        ]
+      }
       ordens_servico: {
         Row: {
           atualizado_em: string
@@ -142,6 +258,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "ordens_servico_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "view_contas_a_receber"
+            referencedColumns: ["cliente_id"]
+          },
+          {
             foreignKeyName: "ordens_servico_veiculo_id_fkey"
             columns: ["veiculo_id"]
             isOneToOne: false
@@ -182,6 +305,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "ordens_servico"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "os_fotos_os_id_fkey"
+            columns: ["os_id"]
+            isOneToOne: false
+            referencedRelation: "view_capital_investido"
+            referencedColumns: ["os_id"]
           },
         ]
       }
@@ -239,6 +369,13 @@ export type Database = {
             referencedRelation: "ordens_servico"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "os_pecas_os_id_fkey"
+            columns: ["os_id"]
+            isOneToOne: false
+            referencedRelation: "view_capital_investido"
+            referencedColumns: ["os_id"]
+          },
         ]
       }
       os_servicos: {
@@ -279,6 +416,189 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "ordens_servico"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "os_servicos_os_id_fkey"
+            columns: ["os_id"]
+            isOneToOne: false
+            referencedRelation: "view_capital_investido"
+            referencedColumns: ["os_id"]
+          },
+        ]
+      }
+      pagamentos: {
+        Row: {
+          atualizado_em: string
+          criado_em: string
+          data_paga: string | null
+          data_prevista: string | null
+          id: string
+          metodo: Database["public"]["Enums"]["pagamento_metodo"]
+          observacoes: string | null
+          ordem: number
+          os_id: string
+          status: Database["public"]["Enums"]["pagamento_status"]
+          valor: number
+        }
+        Insert: {
+          atualizado_em?: string
+          criado_em?: string
+          data_paga?: string | null
+          data_prevista?: string | null
+          id?: string
+          metodo: Database["public"]["Enums"]["pagamento_metodo"]
+          observacoes?: string | null
+          ordem?: number
+          os_id: string
+          status?: Database["public"]["Enums"]["pagamento_status"]
+          valor: number
+        }
+        Update: {
+          atualizado_em?: string
+          criado_em?: string
+          data_paga?: string | null
+          data_prevista?: string | null
+          id?: string
+          metodo?: Database["public"]["Enums"]["pagamento_metodo"]
+          observacoes?: string | null
+          ordem?: number
+          os_id?: string
+          status?: Database["public"]["Enums"]["pagamento_status"]
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pagamentos_os_id_fkey"
+            columns: ["os_id"]
+            isOneToOne: false
+            referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pagamentos_os_id_fkey"
+            columns: ["os_id"]
+            isOneToOne: false
+            referencedRelation: "view_capital_investido"
+            referencedColumns: ["os_id"]
+          },
+        ]
+      }
+      pedido_fornecedor_itens: {
+        Row: {
+          criado_em: string
+          custo_unitario: number
+          descricao: string
+          id: string
+          os_peca_id: string | null
+          pedido_id: string
+          quantidade: number
+          subtotal: number | null
+        }
+        Insert: {
+          criado_em?: string
+          custo_unitario: number
+          descricao: string
+          id?: string
+          os_peca_id?: string | null
+          pedido_id: string
+          quantidade?: number
+          subtotal?: number | null
+        }
+        Update: {
+          criado_em?: string
+          custo_unitario?: number
+          descricao?: string
+          id?: string
+          os_peca_id?: string | null
+          pedido_id?: string
+          quantidade?: number
+          subtotal?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pedido_fornecedor_itens_os_peca_id_fkey"
+            columns: ["os_peca_id"]
+            isOneToOne: false
+            referencedRelation: "os_pecas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pedido_fornecedor_itens_pedido_id_fkey"
+            columns: ["pedido_id"]
+            isOneToOne: false
+            referencedRelation: "pedidos_fornecedor"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pedido_fornecedor_itens_pedido_id_fkey"
+            columns: ["pedido_id"]
+            isOneToOne: false
+            referencedRelation: "view_capital_investido"
+            referencedColumns: ["pedido_id"]
+          },
+        ]
+      }
+      pedidos_fornecedor: {
+        Row: {
+          atualizado_em: string
+          criado_em: string
+          data_compra: string | null
+          data_recebimento: string | null
+          fornecedor_id: string
+          id: string
+          numero: number
+          observacoes: string | null
+          os_id: string | null
+          status: Database["public"]["Enums"]["pedido_fornecedor_status"]
+          valor_total: number
+        }
+        Insert: {
+          atualizado_em?: string
+          criado_em?: string
+          data_compra?: string | null
+          data_recebimento?: string | null
+          fornecedor_id: string
+          id?: string
+          numero?: number
+          observacoes?: string | null
+          os_id?: string | null
+          status?: Database["public"]["Enums"]["pedido_fornecedor_status"]
+          valor_total?: number
+        }
+        Update: {
+          atualizado_em?: string
+          criado_em?: string
+          data_compra?: string | null
+          data_recebimento?: string | null
+          fornecedor_id?: string
+          id?: string
+          numero?: number
+          observacoes?: string | null
+          os_id?: string | null
+          status?: Database["public"]["Enums"]["pedido_fornecedor_status"]
+          valor_total?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pedidos_fornecedor_fornecedor_id_fkey"
+            columns: ["fornecedor_id"]
+            isOneToOne: false
+            referencedRelation: "fornecedores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pedidos_fornecedor_os_id_fkey"
+            columns: ["os_id"]
+            isOneToOne: false
+            referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pedidos_fornecedor_os_id_fkey"
+            columns: ["os_id"]
+            isOneToOne: false
+            referencedRelation: "view_capital_investido"
+            referencedColumns: ["os_id"]
           },
         ]
       }
@@ -337,6 +657,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "veiculos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "view_contas_a_receber"
+            referencedColumns: ["cliente_id"]
+          },
+          {
             foreignKeyName: "veiculos_modelo_id_fkey"
             columns: ["modelo_id"]
             isOneToOne: false
@@ -377,13 +704,50 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      view_capital_investido: {
+        Row: {
+          cliente_nome: string | null
+          cliente_pagou: number | null
+          data_compra: string | null
+          fornecedor_nome: string | null
+          numero: number | null
+          os_id: string | null
+          os_numero: number | null
+          os_total: number | null
+          pedido_id: string | null
+          valor_total: number | null
+        }
+        Relationships: []
+      }
+      view_contas_a_receber: {
+        Row: {
+          cliente_id: string | null
+          cliente_nome: string | null
+          parcelas_atrasadas: number | null
+          parcelas_em_aberto: number | null
+          proxima_data: string | null
+          telefone: string | null
+          total_atrasado: number | null
+          total_em_aberto: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      marca_pagamentos_atrasados: { Args: never; Returns: number }
       recalcula_totais_os: { Args: { p_os_id: string }; Returns: undefined }
+      recalcula_total_pedido_fornecedor: {
+        Args: { p_pedido_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       foto_momento: "entrada" | "saida" | "durante"
+      link_afiliado_status:
+        | "enviado"
+        | "cliente_comprou"
+        | "comissao_recebida"
+        | "cancelado"
       os_status:
         | "aberta"
         | "em_andamento"
@@ -391,8 +755,15 @@ export type Database = {
         | "pronta"
         | "entregue"
         | "cancelada"
+      pagamento_metodo: "pix" | "dinheiro" | "cartao" | "transferencia"
+      pagamento_status: "pendente" | "pago" | "atrasado" | "cancelado"
       peca_origem: "estoque" | "fornecedor" | "mercado_livre_afiliado"
       peca_status: "pendente" | "comprada" | "recebida" | "aplicada"
+      pedido_fornecedor_status:
+        | "cotacao"
+        | "comprado"
+        | "recebido"
+        | "cancelado"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -524,6 +895,12 @@ export const Constants = {
   public: {
     Enums: {
       foto_momento: ["entrada", "saida", "durante"],
+      link_afiliado_status: [
+        "enviado",
+        "cliente_comprou",
+        "comissao_recebida",
+        "cancelado",
+      ],
       os_status: [
         "aberta",
         "em_andamento",
@@ -532,8 +909,16 @@ export const Constants = {
         "entregue",
         "cancelada",
       ],
+      pagamento_metodo: ["pix", "dinheiro", "cartao", "transferencia"],
+      pagamento_status: ["pendente", "pago", "atrasado", "cancelado"],
       peca_origem: ["estoque", "fornecedor", "mercado_livre_afiliado"],
       peca_status: ["pendente", "comprada", "recebida", "aplicada"],
+      pedido_fornecedor_status: [
+        "cotacao",
+        "comprado",
+        "recebido",
+        "cancelado",
+      ],
     },
   },
 } as const
