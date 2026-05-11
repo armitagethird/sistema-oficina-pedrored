@@ -28,7 +28,7 @@ export default function LoginPage() {
     <main className="flex min-h-dvh items-center justify-center bg-background p-4">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle>Entrar</CardTitle>
+          <CardTitle data-testid="login-title">Entrar</CardTitle>
           <CardDescription>Acesse o sistema PedroRed</CardDescription>
         </CardHeader>
         <CardContent>

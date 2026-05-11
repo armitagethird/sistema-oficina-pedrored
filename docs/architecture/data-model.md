@@ -6,7 +6,25 @@
 
 ## Estado atual
 
-**Sprint corrente: 0** — schema ainda não criado. Esta seção será preenchida ao fim do Sprint 0.
+**Sprint 0 aplicado em 2026-05-11.** Schema base no Supabase remoto (`fcaxivdvhgekomvwbrvr`, region `sa-east-1`).
+
+### Tabelas
+
+- **`vw_modelos`** (24 rows seed) — `id uuid`, `modelo text`, `motor text`, `combustivel text default 'flex'`, `ano_inicio int?`, `ano_fim int?`, `criado_em timestamptz`. `unique(modelo, motor)`. RLS: `vw_modelos_authenticated_all` (authenticated→ALL). Index: `idx_vw_modelos_modelo`.
+- **`clientes`** — `id uuid`, `nome text not null`, `telefone text?`, `email text?`, `cpf text?`, `endereco jsonb?` (`{rua, numero, bairro, cidade, cep, complemento}`), `observacoes text?`, `criado_em`, `atualizado_em` (trigger `set_atualizado_em`), `deletado_em timestamptz?` (soft delete). RLS: `clientes_authenticated_all`. Indexes parciais (`where deletado_em is null`): `idx_clientes_nome`, `idx_clientes_telefone`.
+- **`veiculos`** — `id uuid`, `cliente_id uuid not null` → `clientes(id) ON DELETE RESTRICT`, `modelo_id uuid?` → `vw_modelos(id) ON DELETE SET NULL`, `modelo_custom text?`, `motor text?`, `ano int?`, `placa text?`, `cor text?`, `km_atual int default 0`, `observacoes text?`, timestamps + soft delete. Constraint check: `modelo_id IS NOT NULL OR modelo_custom IS NOT NULL`. RLS: `veiculos_authenticated_all`. Indexes parciais: `idx_veiculos_cliente`, `idx_veiculos_placa`.
+
+### Função compartilhada
+
+- `set_atualizado_em()` — trigger plpgsql reutilizado por toda tabela com coluna `atualizado_em`.
+
+### Tipos TS
+
+Gerados em `src/lib/supabase/database.types.ts` via `pnpm db:gen` (Postgrest v14.5). Importar:
+```ts
+import type { Database, Tables, TablesInsert, TablesUpdate } from "@/lib/supabase/database.types";
+type Cliente = Tables<"clientes">;
+```
 
 ## ERD esperado (referência futura)
 

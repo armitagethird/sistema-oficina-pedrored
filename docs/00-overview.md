@@ -6,7 +6,7 @@
 
 | # | Sprint | Status | Branch / PR | Validado por Pedro |
 |---|--------|--------|-------------|---------------------|
-| 0 | Setup | 🟡 a iniciar | — | — |
+| 0 | Setup | 🟢 implementada | main | — |
 | 1 | Core OS | ⚪ pendente | — | — |
 | 2 | Financeiro | ⚪ pendente | — | — |
 | 3 | Estoque | ⚪ pendente | — | — |
@@ -15,7 +15,7 @@
 | 6 | PedroRed Store (pública) | ⚪ pendente | — | — |
 | 7 | IA + Dashboards | ⚪ pendente | — | — |
 
-**Sprint corrente: 0 — Setup.**
+**Sprint corrente: 0 — implementada, aguardando validação manual de Pedro.**
 
 Atualizar esta tabela ao fim de cada sprint (✅ validada / 🟢 implementada aguardando validação / 🟡 em andamento / 🔴 bloqueada / ⚪ pendente).
 
