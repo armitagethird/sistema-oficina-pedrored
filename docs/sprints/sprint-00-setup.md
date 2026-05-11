@@ -6,7 +6,7 @@
 
 ## Status
 
-⚪ **Pendente.** Atualizar para 🟡 ao iniciar, 🟢 ao terminar implementação, ✅ após Pedro validar.
+✅ **Validada em 2026-05-11 por Romero (proxy do Pedro).** Deploy em produção: https://sistema-oficina-pedrored.vercel.app/
 
 ## Contexto rápido
 
@@ -436,11 +436,31 @@ Sprint 0 é ✅ quando:
 
 ## Bloqueios conhecidos
 
-(adicione aqui durante execução)
+Nenhum bloqueio crítico. Desvios documentados em "Progresso" abaixo.
 
 ## Progresso
 
-(atualize aqui conforme tasks vão sendo completadas)
+**Encerrada em 2026-05-11.** 9 commits atômicos no `main`, deploy Vercel verde, validado por Romero (stakeholder agindo por Pedro).
+
+### Desvios de spec
+
+- **Next 16.2.6** (não Next 15) — release atual; `create-next-app` instalou. Stack doc atualizado.
+- **Node 24.x LTS** (não 20) — Node 24 já era LTS na data do Sprint. Stack doc atualizado.
+- **`src/proxy.ts`** (não `src/middleware.ts`) — Next 16 renomeou a convenção.
+- **Service Worker adiado** — `@ducanh2912/next-pwa` usa webpack plugin, incompatível com Turbopack (default no Next 16). Manifest + ícones já bastam pra PWA "Add to Home". SW reavaliado em sprint futura com `@serwist/next` se cache offline virar necessidade.
+- **ESLint flat config sem `eslint-config-next` extends** — circular ref bug com ESLint 9 flat; usei `@next/eslint-plugin-next` direto.
+- **Catálogo VW seed**: 24 modelos aplicados (Gol, Voyage, Saveiro, Polo, Virtus, T-Cross, Up!, Nivus, Taos, Tiguan Allspace, Jetta, Amarok + variantes MSI/TSI/TDI).
+- **PWA ícones placeholder** (PNG vermelho sólido com letra "P" branca, gerados via System.Drawing). Substituir quando logo definitivo do PedroRed estiver pronto.
+
+### Endpoints
+
+| Local | Vercel |
+|-------|--------|
+| http://localhost:3000 | https://sistema-oficina-pedrored.vercel.app/ |
+
+### Próxima sprint
+
+**Sprint 1 — Core OS.** Bootstrap Sprint 1 ao iniciar nova sessão (CLAUDE.md raiz).
 
 ## Referências
 
