@@ -6,15 +6,15 @@
 
 | Dependência | Versão | Justificativa |
 |-------------|--------|---------------|
-| Node.js | 20 LTS (Vercel default) | LTS, suportada por todos os pacotes abaixo |
-| pnpm | 9.x | Gerenciador rápido, lock determinístico, suporte excelente a workspaces se um dia precisarmos |
+| Node.js | 24.x LTS (ativo desde Out/2025) | LTS atual no momento do Sprint 0, suportada por Next 15 e demais pacotes. Vercel build aceita Node 22/24. Atualizar `package.json` engines junto. |
+| pnpm | 9.15.0 (pin via Corepack) | Gerenciador rápido, lock determinístico. Versão fixada via `packageManager` no `package.json`; ativado por Corepack (vem com Node, sem install global). |
 
 ## Core framework
 
 | Dependência | Versão | Justificativa |
 |-------------|--------|---------------|
-| `next` | 15.x | App Router estável, Server Actions GA, React 19 nativo |
-| `react` | 19.x | Atualização do Next 15. `useActionState`, `useOptimistic` úteis para forms |
+| `next` | 16.x (16.2.6+) | App Router maduro, Server Actions GA, Cache Components, React 19 nativo |
+| `react` | 19.2.x | `useActionState`, `useOptimistic`, Server Components estáveis |
 | `typescript` | 5.x | Padrão do mercado, tipagem dos types gerados pelo Supabase |
 
 ## UI
