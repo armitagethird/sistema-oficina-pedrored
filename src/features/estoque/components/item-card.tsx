@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { ChevronRightIcon, PackageIcon } from "lucide-react";
+import { PackageIcon, PencilIcon } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatBRL } from "@/shared/format/money";
 import type { ItemListItem } from "../queries";
@@ -15,14 +16,16 @@ export function ItemCard({
   className?: string;
 }) {
   return (
-    <Link
-      href={`/app/estoque/${item.id}`}
+    <article
       className={cn(
-        "flex items-center justify-between gap-3 rounded-md border bg-card p-3 transition-colors hover:bg-accent",
+        "flex items-center gap-2 rounded-md border bg-card pr-2 transition-colors hover:bg-accent",
         className,
       )}
     >
-      <div className="flex items-center gap-3 min-w-0">
+      <Link
+        href={`/app/estoque/${item.id}`}
+        className="flex flex-1 items-center gap-3 p-3 min-w-0"
+      >
         <div className="grid size-10 place-items-center rounded-full bg-muted text-muted-foreground shrink-0">
           <PackageIcon className="size-5" />
         </div>
@@ -45,8 +48,18 @@ export function ItemCard({
             />
           </div>
         </div>
-      </div>
-      <ChevronRightIcon className="size-4 text-muted-foreground shrink-0" />
-    </Link>
+      </Link>
+      <Button
+        asChild
+        variant="ghost"
+        size="icon"
+        aria-label={`Editar ${item.descricao}`}
+        className="shrink-0"
+      >
+        <Link href={`/app/estoque/${item.id}/editar`}>
+          <PencilIcon className="size-4" />
+        </Link>
+      </Button>
+    </article>
   );
 }

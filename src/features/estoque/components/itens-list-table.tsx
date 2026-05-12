@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { PencilIcon } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -25,7 +27,10 @@ export function ItensListTable({ items }: { items: ItemListItem[] }) {
             <TableHead className="text-right">Custo médio</TableHead>
             <TableHead className="text-right">Venda</TableHead>
             <TableHead>SKU</TableHead>
-            <TableHead></TableHead>
+            <TableHead>Alerta</TableHead>
+            <TableHead className="w-[1%]">
+              <span className="sr-only">Ações</span>
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -63,6 +68,18 @@ export function ItensListTable({ items }: { items: ItemListItem[] }) {
                   qtdAtual={Number(item.quantidade_atual)}
                   alertaMinimo={Number(item.alerta_minimo)}
                 />
+              </TableCell>
+              <TableCell className="text-right">
+                <Button
+                  asChild
+                  variant="ghost"
+                  size="icon"
+                  aria-label={`Editar ${item.descricao}`}
+                >
+                  <Link href={`/app/estoque/${item.id}/editar`}>
+                    <PencilIcon className="size-4" />
+                  </Link>
+                </Button>
               </TableCell>
             </TableRow>
           ))}
