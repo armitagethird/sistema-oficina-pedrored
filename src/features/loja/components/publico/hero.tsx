@@ -1,23 +1,33 @@
+import Image from "next/image";
 import Link from "next/link";
-import { ArrowRightIcon, WrenchIcon } from "lucide-react";
+import { ArrowRightIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden border-b bg-gradient-to-br from-red-50 via-background to-background dark:from-red-950/20">
-      <div className="mx-auto flex max-w-6xl flex-col items-start gap-4 px-4 py-10 md:flex-row md:items-center md:justify-between md:px-6 md:py-16">
-        <div className="flex flex-col gap-3 md:max-w-xl">
-          <span className="inline-flex w-fit items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
-            <WrenchIcon className="size-3" />
-            Especialista linha VW TSI/MSI
-          </span>
-          <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
-            Peças e materiais selecionados pelo mecânico.
+    <section className="relative isolate overflow-hidden border-b">
+      <Image
+        src="/pedrored-hero.jpg"
+        alt="Pedro, mecânico responsável pela PedroRed"
+        fill
+        sizes="100vw"
+        priority
+        className="absolute inset-0 -z-20 object-cover object-[center_30%] md:object-[right_center]"
+      />
+      <div
+        aria-hidden
+        className="absolute inset-0 -z-10 bg-gradient-to-t from-background via-background/85 to-background/30 md:bg-gradient-to-r md:from-background md:via-background/80 md:to-transparent"
+      />
+      <div className="mx-auto flex min-h-[520px] max-w-6xl flex-col justify-end gap-3 px-4 py-12 md:min-h-[480px] md:justify-center md:px-6 md:py-16">
+        <div className="flex max-w-xl flex-col gap-3">
+          <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
+            <span className="text-foreground">Pedro</span>
+            <span className="text-red-500">Red</span>
+            <span className="text-foreground"> Store</span>
           </h1>
           <p className="text-base text-muted-foreground md:text-lg">
-            Compre direto com Pedro — entrega rápida na cidade, retira na
-            oficina, e suporte no WhatsApp pra tirar dúvida antes da compra.
+            Peças e materiais selecionados pelo seu mecânico favorito.
           </p>
           <div className="flex flex-wrap gap-2">
             <Button asChild size="lg">

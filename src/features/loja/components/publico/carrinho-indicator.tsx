@@ -22,7 +22,7 @@ export function CarrinhoIndicator() {
   return (
     <Link
       href="/carrinho"
-      className="relative flex items-center gap-1 text-foreground hover:text-red-600"
+      className="relative flex items-center gap-1 text-neutral-300 transition-colors hover:text-white"
       aria-label={`Carrinho com ${total} item${total === 1 ? "" : "s"}`}
     >
       <ShoppingCartIcon className="size-5" />

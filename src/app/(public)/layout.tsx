@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { WrenchIcon } from "lucide-react";
 
 import { CarrinhoIndicator } from "@/features/loja/components/publico/carrinho-indicator";
 
@@ -10,16 +9,20 @@ export default function PublicLayout({
 }) {
   return (
     <div className="flex min-h-dvh flex-col bg-background">
-      <header className="border-b bg-card">
+      <header className="border-b border-neutral-800 bg-neutral-950 text-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 md:px-6">
-          <Link href="/" className="flex items-center gap-2 font-semibold">
-            <WrenchIcon className="size-5 text-red-600" />
-            <span>PedroRed Store</span>
+          <Link
+            href="/"
+            className="text-lg font-bold tracking-tight"
+            aria-label="PedroRed — página inicial"
+          >
+            <span className="text-white">Pedro</span>
+            <span className="text-red-500">Red</span>
           </Link>
           <nav className="flex items-center gap-4 text-sm">
             <Link
               href="/produtos"
-              className="text-muted-foreground hover:text-foreground"
+              className="text-neutral-400 transition-colors hover:text-white"
             >
               Catálogo
             </Link>
