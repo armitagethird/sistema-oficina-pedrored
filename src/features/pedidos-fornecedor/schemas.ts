@@ -21,6 +21,7 @@ export const pedidoItemCreateSchema = z.object({
   custo_unitario: z.coerce.number().min(0, "Custo inválido"),
   quantidade: z.coerce.number().gt(0, "Quantidade deve ser maior que zero"),
   os_peca_id: z.string().uuid().optional().nullable(),
+  item_estoque_id: z.string().uuid().optional().nullable(),
 });
 
 export const pedidoItemUpdateSchema = pedidoItemCreateSchema.partial();

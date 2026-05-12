@@ -1,5 +1,6 @@
 import Link from "next/link";
 import {
+  AlertTriangleIcon,
   CarIcon,
   ClockIcon,
   FileTextIcon,
@@ -16,6 +17,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import { contarItensAbaixoMinimo } from "@/features/estoque/queries";
+import { contarPedidosPendentes } from "@/features/loja/queries";
 import { OsListMobile } from "@/features/ordens/components/os-list-mobile";
 import { contadoresDashboard, listOSRecentes } from "@/features/ordens/queries";
 import type { OSStatus } from "@/features/ordens/types";
@@ -55,10 +59,13 @@ const STATUS_CARDS: CardSpec[] = [
 ];
 
 export default async function DashboardPage() {
-  const [contadores, recentes] = await Promise.all([
-    contadoresDashboard(),
-    listOSRecentes(5),
-  ]);
+  const [contadores, recentes, abaixoMinimo, pedidosPendentes] =
+    await Promise.all([
+      contadoresDashboard(),
+      listOSRecentes(5),
+      contarItensAbaixoMinimo(),
+      contarPedidosPendentes(),
+    ]);
 
   return (
     <div className="flex flex-col gap-6 p-4 md:p-6">
@@ -92,6 +99,55 @@ export default async function DashboardPage() {
           </Link>
         ))}
       </section>
+
+      {abaixoMinimo > 0 || pedidosPendentes > 0 ? (
+        <section className="grid gap-3 sm:grid-cols-2">
+          {abaixoMinimo > 0 ? (
+            <Link href="/app/estoque?abaixo_minimo=1">
+              <Card
+                className={cn(
+                  "border-red-300 transition-colors hover:bg-accent dark:border-red-900/40",
+                )}
+              >
+                <CardHeader className="flex flex-row items-center gap-3">
+                  <div className="grid size-10 place-items-center rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300">
+                    <AlertTriangleIcon className="size-5" />
+                  </div>
+                  <div className="flex-1">
+                    <CardTitle className="text-base font-medium">
+                      Estoque baixo
+                    </CardTitle>
+                    <CardDescription>
+                      {abaixoMinimo} item{abaixoMinimo === 1 ? "" : "s"} abaixo
+                      do mínimo
+                    </CardDescription>
+                  </div>
+                </CardHeader>
+              </Card>
+            </Link>
+          ) : null}
+          {pedidosPendentes > 0 ? (
+            <Link href="/app/loja/pedidos">
+              <Card className="border-amber-300 transition-colors hover:bg-accent dark:border-amber-900/40">
+                <CardHeader className="flex flex-row items-center gap-3">
+                  <div className="grid size-10 place-items-center rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
+                    <AlertTriangleIcon className="size-5" />
+                  </div>
+                  <div className="flex-1">
+                    <CardTitle className="text-base font-medium">
+                      Pedidos da loja pendentes
+                    </CardTitle>
+                    <CardDescription>
+                      {pedidosPendentes} pedido
+                      {pedidosPendentes === 1 ? "" : "s"} aguardando pagamento
+                    </CardDescription>
+                  </div>
+                </CardHeader>
+              </Card>
+            </Link>
+          ) : null}
+        </section>
+      ) : null}
 
       <section className="grid gap-4 md:grid-cols-[2fr_1fr]">
         <Card>
@@ -139,11 +195,11 @@ export default async function DashboardPage() {
                   Todas as OS
                 </Link>
               </Button>
-              <Button asChild variant="outline" className="justify-start" disabled>
-                <span>
+              <Button asChild variant="outline" className="justify-start">
+                <Link href="/app/estoque">
                   <PackageIcon className="mr-2 size-4" />
-                  Estoque (Sprint 3)
-                </span>
+                  Estoque
+                </Link>
               </Button>
               <Button asChild variant="outline" className="justify-start" disabled>
                 <span>

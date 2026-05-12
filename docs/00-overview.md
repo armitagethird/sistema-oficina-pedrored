@@ -8,14 +8,14 @@
 |---|--------|--------|-------------|---------------------|
 | 0 | Setup | ✅ validada | main | ✅ Romero (proxy) 2026-05-11 |
 | 1 | Core OS | ✅ validada | — | ✅ Romero (proxy) 2026-05-11 |
-| 2 | Financeiro | 🟢 implementada | `sprint-02-financeiro` | aguardando Pedro |
-| 3 | Estoque | ⚪ pendente | — | — |
+| 2 | Financeiro | ✅ validada | `sprint-02-financeiro` → main (PR #1) | ✅ Romero (proxy) 2026-05-11 |
+| 3 | Estoque | 🟢 implementada | `sprint-03-06` | aguardando Pedro |
 | 4 | Agenda | ⚪ pendente | — | — |
 | 5 | WhatsApp (Evolution API) | ⚪ pendente | — | — |
-| 6 | PedroRed Store (pública) | ⚪ pendente | — | — |
+| 6 | PedroRed Store (pública) | 🟢 implementada | `sprint-03-06` | aguardando Pedro |
 | 7 | IA + Dashboards | ⚪ pendente | — | — |
 
-**Sprint corrente: 2 — Financeiro (🟢 implementada, aguardando validação).** (Sprints 0 e 1 validadas por Romero em 2026-05-11; Pedro ainda não testou em produção.)
+**Sprints 3 e 6 implementadas em `sprint-03-06` (PR único pendente).** Notificações WhatsApp da Sprint 6 ficaram como `TODO(sprint-5)` no código. PIX e domínio da loja com placeholders (`.env.local.template`) — Pedro plugga valores reais antes da validação em produção.
 
 **Deploy de produção:** https://sistema-oficina-pedrored.vercel.app/ (Vercel, conectado a `armitagethird/sistema-oficina-pedrored` em GitHub).
 

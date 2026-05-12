@@ -4,7 +4,7 @@
 
 ## Status
 
-⚪ Pendente.
+🟢 Implementada na branch `sprint-03-06` (em conjunto com Sprint 3 por decisão do Romero — PR único pendente).
 
 ## Contexto
 
@@ -417,7 +417,33 @@ src/
 
 ## Progresso
 
-(atualize)
+**Fases entregues:**
+- ✅ 6A — Migration `20260801000000_init_loja.sql` aplicada (produtos_loja, pedidos_loja, itens_pedido_loja, função `gerar_slug_unico`, buckets storage `loja-produtos`/`loja-comprovantes`, RLS, FK `movimentacoes_estoque.pedido_loja_id`)
+- ✅ 6B — `qrcode` + `slugify` instalados. `features/loja/pix.ts` com gerador BR Code (CRC16-CCITT) + 11 testes TDD verdes
+- ✅ 6C — Carrinho client-side (`useSyncExternalStore` + localStorage) com 10 testes TDD verdes
+- ✅ 6D — `src/features/loja/{types,schemas,queries}.ts` + helper `src/lib/supabase/service.ts` (`createServiceClient`) + 13 testes
+- ✅ 6E — `src/app/(public)/checkout/actions.ts` (criarPedido via service_role + uploadComprovante)
+- ✅ 6F — `src/features/loja/actions.ts` (CRUD produto com slug, upload/remove fotos, confirmarPagamento com baixa de estoque via RPC, status changer, cancelarPedido)
+- ✅ 6G — Layout público + páginas (`/`, `/produtos`, `/produto/[slug]`, `/carrinho`, `/checkout`, `/checkout/pagamento`, `/pedido/[id]`) + componentes (Hero, ProdutoCard/Grid/Galeria, AddCarrinhoButton, CheckoutForm, PixQrDisplay com `qrcode.toCanvas`, ComprovanteUpload, PedidoStatusBadge, CarrinhoIndicator)
+- ✅ 6H — Admin loja (`/app/loja/{,produtos/{,novo,[id]},pedidos/{,[id]},configuracoes}`) + componentes (ProdutoForm com upload de fotos, ProdutosList, PedidoCard/List, PedidoDetalhe, ConfirmarPagamentoDialog, StatusChanger). Comprovante exibido via signed URL (TTL 1h).
+- ✅ 6I — `(public)/sitemap.ts` + `robots.ts` (descobertos via Next Metadata API), `/app/mais` criada (atalho pra Loja + outros módulos), dashboard ganha card "Pedidos pendentes (loja)", `.env.local.template` ganha PIX_* + NEXT_PUBLIC_SITE_URL com placeholders documentados, JSON-LD Product no `/produto/[slug]`. TODOs WhatsApp (`TODO(sprint-5)`) plantados em `criarPedido`, `uploadComprovante`, `confirmarPagamento`.
+- ✅ 6J — `e2e/sprint-06-store.spec.ts` (3 cenários smoke); docs atualizados (data-model, deploy, overview)
+- ✅ 6K (suplemento 2026-05-11) — Loja na sidebar desktop. Migration `20260930000000_loja_sob_encomenda.sql` adiciona `produtos_loja.somente_sob_encomenda` + check `produtos_loja_sob_encomenda_sem_estoque` + trigger `trg_itens_estoque_loja_status` (sincroniza `produtos_loja.status` quando saldo cruza zero). `criarPedido` agora bloqueia checkout quando produto vinculado tem saldo insuficiente; produtos sob encomenda passam livres. Form admin esconde combobox de estoque quando flag está ligada. Vitrine pública mostra badge "Sob encomenda" ou "Últimas X unidades" (`SALDO_BAIXO_THRESHOLD = 3`); JSON-LD usa `BackOrder` quando aplicável. Testes de integração `features/loja/integration.test.ts` (7/7 contra DB real) cobrem constraint, trigger nas 3 transições, validação de saldo no checkout. Vitest ganhou alias `server-only` + mock `next/cache` para permitir importar Server Actions.
+
+**Verificação automatizada (CI):**
+- [x] typecheck verde
+- [x] lint verde
+- [x] vitest schemas (13 loja + outros = 144 total passing)
+- [x] vitest PIX (11/11)
+- [x] vitest carrinho store (10/10)
+- [x] migrations aplicam em DB remoto
+
+**Itens com placeholder/TODO (Pedro precisa configurar):**
+- `PIX_CHAVE`, `PIX_NOME_BENEFICIARIO`, `PIX_CIDADE` — quando preencher em Vercel Settings, QR PIX vira válido pra pagamento real
+- `NEXT_PUBLIC_SITE_URL` — quando tiver domínio próprio (pedrored.com.br); sem definir, sitemap/robots apontam pro vercel.app
+- Notificações WhatsApp (Sprint 5) — atualmente Pedro vê pedidos só ao abrir o app
+
+**Manual (Pedro):** pendente — Pedro vai testar em batch (com Sprint 3) em produção.
 
 ## Referências
 

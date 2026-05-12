@@ -52,6 +52,7 @@ export const pecaSchema = z.object({
   status: z
     .enum(PECA_STATUS_VALUES as unknown as [string, ...string[]])
     .optional(),
+  item_estoque_id: z.string().uuid().nullable().optional(),
 });
 
 export const pecaUpdateSchema = pecaSchema.partial();

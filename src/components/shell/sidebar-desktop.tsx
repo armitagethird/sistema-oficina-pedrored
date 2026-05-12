@@ -2,7 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Calendar, FileText, Home, Package, Users, Wallet } from "lucide-react";
+import {
+  Calendar,
+  FileText,
+  Home,
+  Package,
+  Store,
+  Users,
+  Wallet,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items = [
@@ -36,6 +44,12 @@ const items = [
     label: "Financeiro",
     icon: Wallet,
     match: (p: string) => p.startsWith("/app/financeiro"),
+  },
+  {
+    href: "/app/loja",
+    label: "Loja",
+    icon: Store,
+    match: (p: string) => p.startsWith("/app/loja"),
   },
 ];
 
