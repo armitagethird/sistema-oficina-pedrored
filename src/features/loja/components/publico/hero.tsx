@@ -63,20 +63,20 @@ export function Hero({ videos = [] }: { videos?: VideoYoutube[] }) {
         </div>
       </div>
 
-      {/* Desktop: título full-width + grid foto/vídeos integrado */}
+      {/* Desktop: título full-width + grid foto/vídeos integrado, dimensionado pra deixar peek do conteúdo abaixo */}
       <div className="hidden md:block">
-        <div className="mx-auto max-w-6xl px-6 py-14">
-          <div className="mb-10">
+        <div className="mx-auto max-w-6xl px-6 py-8">
+          <div className="mb-6">
             <HeroContent />
           </div>
 
-          <div className="grid grid-cols-2 gap-8">
-            <div className="relative aspect-[4/5] overflow-hidden rounded-xl border bg-muted shadow-sm">
+          <div className="grid grid-cols-[0.9fr_1.1fr] gap-8">
+            <div className="relative h-[400px] overflow-hidden rounded-xl border bg-muted shadow-sm">
               <Image
                 src={HERO_IMAGE}
                 alt={HERO_ALT}
                 fill
-                sizes="(min-width: 1024px) 480px, 50vw"
+                sizes="(min-width: 1024px) 440px, 50vw"
                 priority
                 className="object-cover object-[center_15%]"
               />
@@ -102,7 +102,7 @@ export function Hero({ videos = [] }: { videos?: VideoYoutube[] }) {
                     Ver canal <ArrowRightIcon className="size-4" />
                   </a>
                 </header>
-                <div className="flex flex-1 flex-col justify-between gap-3">
+                <div className="flex flex-col gap-3">
                   {videosNoHero.map((video) => (
                     <VideoRow key={video.id} video={video} />
                   ))}
