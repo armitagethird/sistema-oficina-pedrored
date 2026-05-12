@@ -161,6 +161,7 @@ export async function addPedidoItem(
       custo_unitario: parsed.data.custo_unitario,
       quantidade: parsed.data.quantidade,
       os_peca_id: parsed.data.os_peca_id ?? null,
+      item_estoque_id: parsed.data.item_estoque_id ?? null,
     })
     .select("*")
     .single();
@@ -187,6 +188,8 @@ export async function updatePedidoItem(
     patch.custo_unitario = parsed.data.custo_unitario;
   if (parsed.data.quantidade !== undefined) patch.quantidade = parsed.data.quantidade;
   if (parsed.data.os_peca_id !== undefined) patch.os_peca_id = parsed.data.os_peca_id ?? null;
+  if (parsed.data.item_estoque_id !== undefined)
+    patch.item_estoque_id = parsed.data.item_estoque_id ?? null;
 
   const { data, error } = await supabase
     .from("pedido_fornecedor_itens")
@@ -231,4 +234,58 @@ export async function vincularOsPeca(
   osPecaId: string | null,
 ): Promise<ActionResult<PedidoItem>> {
   return updatePedidoItem(itemId, { os_peca_id: osPecaId });
+}
+
+export async function vincularItemEstoque(
+  itemId: string,
+  itemEstoqueId: string | null,
+): Promise<ActionResult<PedidoItem>> {
+  return updatePedidoItem(itemId, { item_estoque_id: itemEstoqueId });
+}
+
+/**
+ * Para cada item do pedido com item_estoque_id vinculado, registra uma entrada
+ * no estoque (RPC aplicar_movimentacao_estoque com tipo='entrada').
+ *
+ * Só funciona quando o pedido está em status='recebido'. A função é idempotente
+ * apenas via o pedido_fornecedor_id: chamar duas vezes lançaria entradas duplicadas.
+ * O caller (UI) deve checar `contarEntradasLancadas` antes de habilitar o botão.
+ */
+export async function lancarPedidoNoEstoque(
+  pedidoId: string,
+): Promise<ActionResult<{ entradas: number }>> {
+  const supabase = await createClient();
+  const { data: pedido } = await supabase
+    .from("pedidos_fornecedor")
+    .select("id, status")
+    .eq("id", pedidoId)
+    .maybeSingle();
+  if (!pedido) return { ok: false, error: "Pedido não encontrado" };
+  if (pedido.status !== "recebido")
+    return { ok: false, error: "Só é possível lançar pedidos recebidos" };
+
+  const { data: itens, error: itErr } = await supabase
+    .from("pedido_fornecedor_itens")
+    .select("id, item_estoque_id, custo_unitario, quantidade")
+    .eq("pedido_id", pedidoId);
+  if (itErr) return { ok: false, error: itErr.message };
+
+  let count = 0;
+  for (const it of itens ?? []) {
+    if (!it.item_estoque_id) continue;
+    const { error: rpcErr } = await supabase.rpc("aplicar_movimentacao_estoque", {
+      p_item_id: it.item_estoque_id,
+      p_tipo: "entrada",
+      p_quantidade: Number(it.quantidade),
+      p_custo_unitario: Number(it.custo_unitario),
+      p_pedido_fornecedor_id: pedidoId,
+    });
+    if (rpcErr) {
+      console.error("lancarPedidoNoEstoque RPC:", rpcErr);
+      return { ok: false, error: rpcErr.message };
+    }
+    count += 1;
+  }
+  revalidatePedido(pedidoId);
+  return { ok: true, data: { entradas: count } };
 }

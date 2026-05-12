@@ -681,6 +681,7 @@ export type Database = {
           custo_unitario: number
           descricao: string
           id: string
+          item_estoque_id: string | null
           os_peca_id: string | null
           pedido_id: string
           quantidade: number
@@ -691,6 +692,7 @@ export type Database = {
           custo_unitario: number
           descricao: string
           id?: string
+          item_estoque_id?: string | null
           os_peca_id?: string | null
           pedido_id: string
           quantidade?: number
@@ -701,12 +703,27 @@ export type Database = {
           custo_unitario?: number
           descricao?: string
           id?: string
+          item_estoque_id?: string | null
           os_peca_id?: string | null
           pedido_id?: string
           quantidade?: number
           subtotal?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "pedido_fornecedor_itens_item_estoque_id_fkey"
+            columns: ["item_estoque_id"]
+            isOneToOne: false
+            referencedRelation: "itens_estoque"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pedido_fornecedor_itens_item_estoque_id_fkey"
+            columns: ["item_estoque_id"]
+            isOneToOne: false
+            referencedRelation: "view_itens_abaixo_minimo"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "pedido_fornecedor_itens_os_peca_id_fkey"
             columns: ["os_peca_id"]

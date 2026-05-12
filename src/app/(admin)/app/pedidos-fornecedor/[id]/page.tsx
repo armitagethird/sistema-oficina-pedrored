@@ -11,10 +11,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { LancarEstoqueButton } from "@/features/pedidos-fornecedor/components/lancar-estoque-button";
 import { PedidoItensItemized } from "@/features/pedidos-fornecedor/components/pedido-itens-itemized";
 import { PedidoStatusBadge } from "@/features/pedidos-fornecedor/components/pedido-status-badge";
 import { PedidoStatusChanger } from "@/features/pedidos-fornecedor/components/pedido-status-changer";
-import { getPedido } from "@/features/pedidos-fornecedor/queries";
+import { contarEntradasLancadas, getPedido } from "@/features/pedidos-fornecedor/queries";
 import { formatBRL } from "@/shared/format/money";
 
 type Params = Promise<{ id: string }>;
@@ -35,6 +36,9 @@ export default async function PedidoFornecedorDetalhePage({
   if (!pedido) notFound();
 
   const readonly = pedido.status === "cancelado";
+  const itensComEstoque = pedido.itens.filter((it) => it.item_estoque_id).length;
+  const entradasLancadas =
+    pedido.status === "recebido" ? await contarEntradasLancadas(id) : 0;
 
   return (
     <div className="flex flex-col gap-4 p-4 md:p-6">
@@ -138,8 +142,15 @@ export default async function PedidoFornecedorDetalhePage({
       </Card>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-base">Itens</CardTitle>
+          {pedido.status === "recebido" ? (
+            <LancarEstoqueButton
+              pedidoId={pedido.id}
+              itensComEstoque={itensComEstoque}
+              entradasLancadas={entradasLancadas}
+            />
+          ) : null}
         </CardHeader>
         <CardContent>
           <PedidoItensItemized

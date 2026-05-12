@@ -1,12 +1,16 @@
 "use client";
 
 import * as React from "react";
-import { LinkIcon, Unlink2Icon } from "lucide-react";
+import { LinkIcon, PackageIcon, Unlink2Icon } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  ItemCombobox,
+  type ItemComboboxValue,
+} from "@/features/estoque/components/item-combobox";
 import { ItemizedList } from "@/shared/components/itemized-list";
 import { MoneyInput } from "@/shared/components/money-input";
 import { formatBRL } from "@/shared/format/money";
@@ -20,6 +24,7 @@ type Draft = {
   custo_unitario: string;
   quantidade: string;
   os_peca_id: string | null;
+  item_estoque_id: string | null;
 };
 
 function toDraft(item: PedidoItem): Draft {
@@ -29,6 +34,7 @@ function toDraft(item: PedidoItem): Draft {
     custo_unitario: Number(item.custo_unitario).toFixed(2),
     quantidade: String(item.quantidade),
     os_peca_id: item.os_peca_id,
+    item_estoque_id: item.item_estoque_id,
   };
 }
 
@@ -54,9 +60,9 @@ export function PedidoItensItemized({
     );
   }
 
-  function persist(index: number) {
+  function persist(index: number, override?: Partial<Draft>) {
     if (readonly) return;
-    const draft = items[index];
+    const draft = { ...items[index], ...override };
     if (!draft) return;
     const custo = Number(draft.custo_unitario);
     const qtd = Number(draft.quantidade);
@@ -68,6 +74,7 @@ export function PedidoItensItemized({
       descricao: draft.descricao,
       custo_unitario: custo,
       quantidade: qtd,
+      item_estoque_id: draft.item_estoque_id,
     };
 
     startTransition(async () => {
@@ -94,6 +101,7 @@ export function PedidoItensItemized({
         custo_unitario: "0.00",
         quantidade: "1",
         os_peca_id: null,
+        item_estoque_id: null,
       },
     ]);
   }
@@ -115,6 +123,25 @@ export function PedidoItensItemized({
     });
   }
 
+  function handleSelectItemEstoque(index: number, item: ItemComboboxValue) {
+    const patch: Partial<Draft> = {
+      item_estoque_id: item.id,
+      descricao: items[index]?.descricao || item.descricao,
+      custo_unitario:
+        Number(items[index]?.custo_unitario) > 0
+          ? items[index]!.custo_unitario
+          : Number(item.custo_medio).toFixed(2),
+    };
+    update(index, patch);
+    persist(index, patch);
+  }
+
+  function handleClearItemEstoque(index: number) {
+    const patch: Partial<Draft> = { item_estoque_id: null };
+    update(index, patch);
+    persist(index, patch);
+  }
+
   const total = items.reduce((acc, it) => {
     const c = Number(it.custo_unitario);
     const q = Number(it.quantidade);
@@ -130,7 +157,8 @@ export function PedidoItensItemized({
         ) : (
           <ul className="flex flex-col gap-2">
             {items.map((item, index) => {
-              const subtotal = Number(item.custo_unitario) * Number(item.quantidade);
+              const subtotal =
+                Number(item.custo_unitario) * Number(item.quantidade);
               return (
                 <li
                   key={index}
@@ -141,6 +169,7 @@ export function PedidoItensItemized({
                     <p className="text-xs text-muted-foreground">
                       {formatBRL(Number(item.custo_unitario))} × {item.quantidade}
                       {item.os_peca_id ? " · vinculado a peça de OS" : ""}
+                      {item.item_estoque_id ? " · vinculado a estoque" : ""}
                     </p>
                   </div>
                   <span className="shrink-0 font-medium">{formatBRL(subtotal)}</span>
@@ -190,7 +219,7 @@ export function PedidoItensItemized({
                   value={item.custo_unitario}
                   onValueChange={(v) => {
                     update(index, { custo_unitario: v });
-                    persist(index);
+                    persist(index, { custo_unitario: v });
                   }}
                 />
               </div>
@@ -218,6 +247,34 @@ export function PedidoItensItemized({
                   {formatBRL(Number(item.custo_unitario) * Number(item.quantidade))}
                 </div>
               </div>
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs text-muted-foreground flex items-center gap-1">
+                <PackageIcon className="size-3" />
+                Item de estoque (opcional)
+              </Label>
+              {item.item_estoque_id ? (
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary" className="gap-1">
+                    <PackageIcon className="size-3" />
+                    Vinculado ao estoque
+                  </Badge>
+                  <button
+                    type="button"
+                    onClick={() => handleClearItemEstoque(index)}
+                    className="text-xs text-muted-foreground underline"
+                  >
+                    desvincular
+                  </button>
+                </div>
+              ) : (
+                <ItemCombobox
+                  value={null}
+                  placeholder="Vincular a item de estoque (para baixar entrada)"
+                  onSelect={(it) => handleSelectItemEstoque(index, it)}
+                />
+              )}
             </div>
 
             {item.id ? (

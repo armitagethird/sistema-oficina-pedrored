@@ -156,3 +156,17 @@ export async function countPedidos(): Promise<number> {
   if (error) throw new Error(`Erro ao contar pedidos: ${error.message}`);
   return count ?? 0;
 }
+
+export async function contarEntradasLancadas(
+  pedidoId: string,
+): Promise<number> {
+  const supabase = await createClient();
+  const { count, error } = await supabase
+    .from("movimentacoes_estoque")
+    .select("*", { count: "exact", head: true })
+    .eq("pedido_fornecedor_id", pedidoId)
+    .eq("tipo", "entrada");
+  if (error)
+    throw new Error(`Erro ao contar entradas lançadas: ${error.message}`);
+  return count ?? 0;
+}
