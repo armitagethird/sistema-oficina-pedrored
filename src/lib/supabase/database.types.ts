@@ -197,6 +197,54 @@ export type Database = {
           },
         ]
       }
+      itens_pedido_loja: {
+        Row: {
+          criado_em: string
+          id: string
+          pedido_id: string
+          preco_unitario: number
+          produto_id: string
+          quantidade: number
+          subtotal: number | null
+          titulo_snapshot: string
+        }
+        Insert: {
+          criado_em?: string
+          id?: string
+          pedido_id: string
+          preco_unitario: number
+          produto_id: string
+          quantidade: number
+          subtotal?: number | null
+          titulo_snapshot: string
+        }
+        Update: {
+          criado_em?: string
+          id?: string
+          pedido_id?: string
+          preco_unitario?: number
+          produto_id?: string
+          quantidade?: number
+          subtotal?: number | null
+          titulo_snapshot?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "itens_pedido_loja_pedido_id_fkey"
+            columns: ["pedido_id"]
+            isOneToOne: false
+            referencedRelation: "pedidos_loja"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "itens_pedido_loja_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "produtos_loja"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       links_afiliado_enviados: {
         Row: {
           cliente_id: string
@@ -318,6 +366,13 @@ export type Database = {
           tipo?: Database["public"]["Enums"]["movimentacao_tipo"]
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_mov_pedido_loja"
+            columns: ["pedido_loja_id"]
+            isOneToOne: false
+            referencedRelation: "pedidos_loja"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "movimentacoes_estoque_item_id_fkey"
             columns: ["item_id"]
@@ -811,6 +866,141 @@ export type Database = {
           },
         ]
       }
+      pedidos_loja: {
+        Row: {
+          atualizado_em: string
+          cliente_email: string | null
+          cliente_endereco: Json
+          cliente_nome: string
+          cliente_telefone: string
+          comprovante_url: string | null
+          criado_em: string
+          enviado_em: string | null
+          id: string
+          metodo_pagamento: string
+          numero: number
+          observacoes_cliente: string | null
+          observacoes_internas: string | null
+          pago_em: string | null
+          status: Database["public"]["Enums"]["pedido_loja_status"]
+          valor_frete: number
+          valor_subtotal: number
+          valor_total: number
+        }
+        Insert: {
+          atualizado_em?: string
+          cliente_email?: string | null
+          cliente_endereco: Json
+          cliente_nome: string
+          cliente_telefone: string
+          comprovante_url?: string | null
+          criado_em?: string
+          enviado_em?: string | null
+          id?: string
+          metodo_pagamento?: string
+          numero?: number
+          observacoes_cliente?: string | null
+          observacoes_internas?: string | null
+          pago_em?: string | null
+          status?: Database["public"]["Enums"]["pedido_loja_status"]
+          valor_frete?: number
+          valor_subtotal: number
+          valor_total: number
+        }
+        Update: {
+          atualizado_em?: string
+          cliente_email?: string | null
+          cliente_endereco?: Json
+          cliente_nome?: string
+          cliente_telefone?: string
+          comprovante_url?: string | null
+          criado_em?: string
+          enviado_em?: string | null
+          id?: string
+          metodo_pagamento?: string
+          numero?: number
+          observacoes_cliente?: string | null
+          observacoes_internas?: string | null
+          pago_em?: string | null
+          status?: Database["public"]["Enums"]["pedido_loja_status"]
+          valor_frete?: number
+          valor_subtotal?: number
+          valor_total?: number
+        }
+        Relationships: []
+      }
+      produtos_loja: {
+        Row: {
+          atualizado_em: string
+          criado_em: string
+          descricao: string | null
+          destaque: boolean
+          estoque_manual: number | null
+          fotos: Json
+          frete_info: string | null
+          id: string
+          item_estoque_id: string | null
+          metadata: Json | null
+          ordem_destaque: number | null
+          preco: number
+          preco_promocional: number | null
+          slug: string
+          status: Database["public"]["Enums"]["produto_status"]
+          titulo: string
+        }
+        Insert: {
+          atualizado_em?: string
+          criado_em?: string
+          descricao?: string | null
+          destaque?: boolean
+          estoque_manual?: number | null
+          fotos?: Json
+          frete_info?: string | null
+          id?: string
+          item_estoque_id?: string | null
+          metadata?: Json | null
+          ordem_destaque?: number | null
+          preco: number
+          preco_promocional?: number | null
+          slug: string
+          status?: Database["public"]["Enums"]["produto_status"]
+          titulo: string
+        }
+        Update: {
+          atualizado_em?: string
+          criado_em?: string
+          descricao?: string | null
+          destaque?: boolean
+          estoque_manual?: number | null
+          fotos?: Json
+          frete_info?: string | null
+          id?: string
+          item_estoque_id?: string | null
+          metadata?: Json | null
+          ordem_destaque?: number | null
+          preco?: number
+          preco_promocional?: number | null
+          slug?: string
+          status?: Database["public"]["Enums"]["produto_status"]
+          titulo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "produtos_loja_item_estoque_id_fkey"
+            columns: ["item_estoque_id"]
+            isOneToOne: false
+            referencedRelation: "itens_estoque"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "produtos_loja_item_estoque_id_fkey"
+            columns: ["item_estoque_id"]
+            isOneToOne: false
+            referencedRelation: "view_itens_abaixo_minimo"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       veiculos: {
         Row: {
           ano: number | null
@@ -1016,6 +1206,10 @@ export type Database = {
         }
         Returns: string
       }
+      gerar_slug_unico: {
+        Args: { p_id?: string; p_titulo: string }
+        Returns: string
+      }
       marca_pagamentos_atrasados: { Args: never; Returns: number }
       recalcula_totais_os: { Args: { p_os_id: string }; Returns: undefined }
       recalcula_total_pedido_fornecedor: {
@@ -1047,6 +1241,15 @@ export type Database = {
         | "comprado"
         | "recebido"
         | "cancelado"
+      pedido_loja_status:
+        | "aguardando_pagamento"
+        | "pagamento_em_analise"
+        | "pago"
+        | "em_separacao"
+        | "enviado"
+        | "retirado"
+        | "cancelado"
+      produto_status: "ativo" | "inativo" | "esgotado"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1203,6 +1406,16 @@ export const Constants = {
         "recebido",
         "cancelado",
       ],
+      pedido_loja_status: [
+        "aguardando_pagamento",
+        "pagamento_em_analise",
+        "pago",
+        "em_separacao",
+        "enviado",
+        "retirado",
+        "cancelado",
+      ],
+      produto_status: ["ativo", "inativo", "esgotado"],
     },
   },
 } as const
