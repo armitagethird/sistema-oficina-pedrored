@@ -17,6 +17,12 @@
 
 **Sprints 3 e 6 implementadas em `sprint-03-06` (PR único pendente).** Notificações WhatsApp da Sprint 6 ficaram como `TODO(sprint-5)` no código. PIX e domínio da loja com placeholders (`.env.local.template`) — Pedro plugga valores reais antes da validação em produção.
 
+**Outras pendências da Sprint 6 a resolver antes/durante a Sprint 5:**
+- Link `https://wa.me/55` está hardcoded em 3 lugares (`(public)/layout.tsx`, `(public)/page.tsx`, `features/loja/components/publico/hero.tsx`). Cliente clica e cai num número inválido. Mover para `NEXT_PUBLIC_WHATSAPP_NUMBER` quando a Sprint 5 começar (ela já lida com configuração de WhatsApp).
+- Campo `produtos_loja.estoque_manual` existe na tabela e no form admin (`features/loja/components/admin/produto-form.tsx`) mas nenhuma query/action lê — dívida técnica. Decidir entre usar (validar no checkout pra produtos sem vínculo de estoque) ou remover.
+
+**Decisão de UX consciente:** loja **não** tem ícone próprio na bottom-nav mobile (5 slots já lotados com Início/OS/Estoque/Agenda/Mais). Acesso mobile via `/app/mais`. Sidebar desktop ganhou o ícone Store ao lado de Financeiro.
+
 **Deploy de produção:** https://sistema-oficina-pedrored.vercel.app/ (Vercel, conectado a `armitagethird/sistema-oficina-pedrored` em GitHub).
 
 Atualizar esta tabela ao fim de cada sprint (✅ validada / 🟢 implementada aguardando validação / 🟡 em andamento / 🔴 bloqueada / ⚪ pendente).

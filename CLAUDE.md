@@ -42,6 +42,7 @@ Se o usuário pedir algo fora da sprint corrente, **avise antes de fazer**: "Iss
 - **Datas:** sempre `Date` no servidor, ISO string no transporte, `Intl.DateTimeFormat("pt-BR")` na exibição. Timezone: `America/Sao_Paulo`.
 - **Dinheiro:** sempre `numeric(12, 2)` no Postgres, `string` no transporte (evita float drift), `Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" })` na exibição. Helper em `src/shared/format/money.ts`.
 - **Erros:** nunca silenciar. Server actions retornam erro tipado. Toast (sonner) exibe mensagem amigável pt-BR. Log técnico via `console.error` no server.
+- **Testando Server Actions:** desde o suplemento Sprint 6, `vitest.config.ts` aliasa `server-only` → `src/test-stubs/server-only.ts` (vazio) e `vitest.setup.ts` mocka `next/cache` (`revalidatePath`/`revalidateTag`/`unstable_cache`). Isso permite importar Server Actions e queries server-side em testes (vitest/jsdom não tem contexto de request). Ao escrever testes que tocam DB, siga o padrão `RUN_DB_INTEGRATION=1` com cleanup no `afterAll` — exemplos em `src/features/{estoque,financeiro,loja}/integration.test.ts`.
 
 ## Comandos do projeto
 

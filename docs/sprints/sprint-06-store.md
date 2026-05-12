@@ -442,6 +442,20 @@ src/
 - `PIX_CHAVE`, `PIX_NOME_BENEFICIARIO`, `PIX_CIDADE` — quando preencher em Vercel Settings, QR PIX vira válido pra pagamento real
 - `NEXT_PUBLIC_SITE_URL` — quando tiver domínio próprio (pedrored.com.br); sem definir, sitemap/robots apontam pro vercel.app
 - Notificações WhatsApp (Sprint 5) — atualmente Pedro vê pedidos só ao abrir o app
+- Link `https://wa.me/55` hardcoded em `(public)/layout.tsx`, `(public)/page.tsx` e `features/loja/components/publico/hero.tsx`. Cliente clica e cai em número inválido. Refator pendente: ler de `NEXT_PUBLIC_WHATSAPP_NUMBER` (incluir no `.env.local.template`). Casar com a Sprint 5 que já vai configurar WhatsApp.
+
+**Dívidas técnicas a resolver:**
+- `produtos_loja.estoque_manual` (int opcional) existe na tabela e aparece no `produto-form.tsx`, mas nenhuma query nem action lê o valor. Decidir: (a) usar de fato (validar/exibir saldo manual no checkout pra produtos sem vínculo de estoque), ou (b) dropar coluna e tirar do form.
+
+**Risco de rollback (se o PR for revertido depois do merge):**
+A migration `20260930000000_loja_sob_encomenda.sql` **já foi aplicada** no Supabase remoto via `pnpm db:migrate` em 2026-05-11. `git revert` no commit do código NÃO reverte o schema. Para rollback completo, escrever migration nova:
+```sql
+drop trigger trg_itens_estoque_loja_status on itens_estoque;
+drop function trg_itens_estoque_sync_loja_status();
+alter table produtos_loja drop constraint produtos_loja_sob_encomenda_sem_estoque;
+alter table produtos_loja drop column somente_sob_encomenda;
+```
+E aplicar com `pnpm db:migrate`. Idem para a `20260801000000_init_loja.sql` se reverter a Sprint 6 inteira (mais invasivo — drops em cascata).
 
 **Manual (Pedro):** pendente — Pedro vai testar em batch (com Sprint 3) em produção.
 
