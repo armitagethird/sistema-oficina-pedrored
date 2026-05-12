@@ -11,6 +11,7 @@ import { AgendaStatusBadge } from "@/features/agenda/components/AgendaStatusBadg
 import { MudarStatusAgendamento } from "@/features/agenda/components/MudarStatusAgendamento";
 import { criarOSFromAgendamento } from "@/features/agenda/actions";
 import { PERIODO_LABEL } from "@/features/agenda/types";
+import { descreveVeiculo } from "@/features/veiculos/types";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -95,10 +96,7 @@ export default async function AgendamentoDetailPage({ params }: Props) {
               <p>
                 <span className="text-muted-foreground">Veículo: </span>
                 <span className="font-medium">
-                  {agendamento.veiculos.modelo}
-                  {agendamento.veiculos.placa
-                    ? ` — ${agendamento.veiculos.placa}`
-                    : ""}
+                  {descreveVeiculo(agendamento.veiculos)}
                 </span>
               </p>
             )}

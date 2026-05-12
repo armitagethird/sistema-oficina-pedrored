@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Car, User } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { descreveVeiculo } from "@/features/veiculos/types";
 import type { AgendamentoComRelacoes } from "../types";
 import { AgendaStatusBadge } from "./AgendaStatusBadge";
 
@@ -26,8 +27,7 @@ export function AgendamentoCard({ agendamento: ag }: Props) {
                 {ag.veiculos && (
                   <span className="flex items-center gap-1">
                     <Car className="size-3" />
-                    {ag.veiculos.modelo}
-                    {ag.veiculos.placa ? ` · ${ag.veiculos.placa}` : ""}
+                    {descreveVeiculo(ag.veiculos)}
                   </span>
                 )}
               </div>

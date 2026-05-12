@@ -21,9 +21,16 @@ export type OcupacaoDia = {
   disponivel: number;
 };
 
+export type AgendamentoVeiculoInfo = {
+  modelo_custom: string | null;
+  motor: string | null;
+  placa: string | null;
+  vw_modelo: { modelo: string; motor: string } | null;
+};
+
 export type AgendamentoComRelacoes = Agendamento & {
   clientes: { nome: string; telefone: string | null } | null;
-  veiculos: { modelo: string; placa: string | null } | null;
+  veiculos: AgendamentoVeiculoInfo | null;
 };
 
 const TRANSITIONS: Record<AgendaStatus, readonly AgendaStatus[]> = {

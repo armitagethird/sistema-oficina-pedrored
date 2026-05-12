@@ -16,7 +16,7 @@ export type AgendamentosHoje = {
 const AGENDAMENTO_SELECT = `
   *,
   clientes(nome, telefone),
-  veiculos(modelo, placa)
+  veiculos(modelo_custom, motor, placa, vw_modelo:vw_modelos(modelo, motor))
 ` as const;
 
 export async function getAgendamentosHoje(): Promise<AgendamentosHoje> {
