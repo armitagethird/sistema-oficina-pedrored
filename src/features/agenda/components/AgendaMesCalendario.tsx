@@ -4,8 +4,8 @@ import { ptBR } from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import { getAgendamentosMes } from "../queries";
+import { AgendaCalendarioClient } from "./AgendaCalendarioClient";
 
 interface Props {
   ano: number;
@@ -24,9 +24,8 @@ export async function AgendaMesCalendario({ ano, mes }: Props) {
   const prevDate = subMonths(dataBase, 1);
   const nextDate = addMonths(dataBase, 1);
 
-  const diasComAgendamento = Array.from(contagem.keys()).map(
-    (d) => new Date(d + "T12:00:00"),
-  );
+  const mesBase = `${ano}-${String(mes).padStart(2, "0")}`;
+  const diasComAgendamento = Array.from(contagem.keys());
 
   return (
     <div className="space-y-4">
@@ -59,12 +58,9 @@ export async function AgendaMesCalendario({ ano, mes }: Props) {
         </div>
       </div>
 
-      <Calendar
-        mode="multiple"
-        selected={diasComAgendamento}
-        month={dataBase}
-        locale={ptBR}
-        className="rounded-md border"
+      <AgendaCalendarioClient
+        diasComAgendamento={diasComAgendamento}
+        mesBase={mesBase}
       />
 
       <div className="space-y-1">
