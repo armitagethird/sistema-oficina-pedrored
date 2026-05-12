@@ -1,5 +1,6 @@
 import Link from "next/link";
 import {
+  AlertTriangleIcon,
   CarIcon,
   ClockIcon,
   FileTextIcon,
@@ -16,6 +17,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import { contarItensAbaixoMinimo } from "@/features/estoque/queries";
 import { OsListMobile } from "@/features/ordens/components/os-list-mobile";
 import { contadoresDashboard, listOSRecentes } from "@/features/ordens/queries";
 import type { OSStatus } from "@/features/ordens/types";
@@ -55,9 +58,10 @@ const STATUS_CARDS: CardSpec[] = [
 ];
 
 export default async function DashboardPage() {
-  const [contadores, recentes] = await Promise.all([
+  const [contadores, recentes, abaixoMinimo] = await Promise.all([
     contadoresDashboard(),
     listOSRecentes(5),
+    contarItensAbaixoMinimo(),
   ]);
 
   return (
@@ -92,6 +96,31 @@ export default async function DashboardPage() {
           </Link>
         ))}
       </section>
+
+      {abaixoMinimo > 0 ? (
+        <Link href="/app/estoque?abaixo_minimo=1">
+          <Card
+            className={cn(
+              "border-red-300 transition-colors hover:bg-accent dark:border-red-900/40",
+            )}
+          >
+            <CardHeader className="flex flex-row items-center gap-3">
+              <div className="grid size-10 place-items-center rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300">
+                <AlertTriangleIcon className="size-5" />
+              </div>
+              <div className="flex-1">
+                <CardTitle className="text-base font-medium">
+                  Estoque baixo
+                </CardTitle>
+                <CardDescription>
+                  {abaixoMinimo} item{abaixoMinimo === 1 ? "" : "s"} abaixo do
+                  mínimo
+                </CardDescription>
+              </div>
+            </CardHeader>
+          </Card>
+        </Link>
+      ) : null}
 
       <section className="grid gap-4 md:grid-cols-[2fr_1fr]">
         <Card>
@@ -139,11 +168,11 @@ export default async function DashboardPage() {
                   Todas as OS
                 </Link>
               </Button>
-              <Button asChild variant="outline" className="justify-start" disabled>
-                <span>
+              <Button asChild variant="outline" className="justify-start">
+                <Link href="/app/estoque">
                   <PackageIcon className="mr-2 size-4" />
-                  Estoque (Sprint 3)
-                </span>
+                  Estoque
+                </Link>
               </Button>
               <Button asChild variant="outline" className="justify-start" disabled>
                 <span>
