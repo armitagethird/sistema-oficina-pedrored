@@ -18,6 +18,8 @@ import {
   isTransitionAllowed,
   STATUS_LABEL,
   type Agendamento,
+  type AgendamentoUpdate,
+  type AgendaPeriodo,
   type AgendaStatus,
   type CapacidadeOverride,
   type OcupacaoDia,
@@ -47,10 +49,12 @@ export async function createAgendamento(
 
   const supabase = await createClient();
 
+  const periodo = parsed.data.periodo as AgendaPeriodo;
+
   // Verificar capacidade (aviso, não bloqueio)
   const { data: ocupacao } = await supabase.rpc("ocupacao_dia", {
     p_data: parsed.data.data,
-    p_periodo: parsed.data.periodo,
+    p_periodo: periodo,
   });
   const slot = ocupacao?.[0] as OcupacaoDia | undefined;
   const capacidadeExcedida = slot ? slot.disponivel <= 0 : false;
@@ -61,7 +65,7 @@ export async function createAgendamento(
       cliente_id: parsed.data.cliente_id,
       veiculo_id: parsed.data.veiculo_id ?? null,
       data: parsed.data.data,
-      periodo: parsed.data.periodo,
+      periodo,
       descricao: parsed.data.descricao,
       observacoes: parsed.data.observacoes?.trim() || null,
     })
@@ -117,11 +121,12 @@ export async function updateAgendamento(
     };
   }
 
-  const patch: Record<string, unknown> = {};
+  const patch: AgendamentoUpdate = {};
   if (parsed.data.veiculo_id !== undefined)
     patch.veiculo_id = parsed.data.veiculo_id ?? null;
   if (parsed.data.data !== undefined) patch.data = parsed.data.data;
-  if (parsed.data.periodo !== undefined) patch.periodo = parsed.data.periodo;
+  if (parsed.data.periodo !== undefined)
+    patch.periodo = parsed.data.periodo as AgendaPeriodo;
   if (parsed.data.descricao !== undefined)
     patch.descricao = parsed.data.descricao;
   if (parsed.data.observacoes !== undefined)
@@ -289,7 +294,7 @@ export async function setCapacidadeOverride(
     .upsert(
       {
         data: parsed.data.data,
-        periodo: parsed.data.periodo,
+        periodo: parsed.data.periodo as AgendaPeriodo,
         capacidade: parsed.data.capacidade,
         motivo: parsed.data.motivo?.trim() || null,
       },

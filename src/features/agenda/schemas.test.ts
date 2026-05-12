@@ -1,9 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   agendamentoCreateSchema,
-  agendamentoUpdateSchema,
   mudarStatusAgendamentoSchema,
-  capacidadeOverrideSchema,
   settingsCapacidadeSchema,
 } from "./schemas";
 
