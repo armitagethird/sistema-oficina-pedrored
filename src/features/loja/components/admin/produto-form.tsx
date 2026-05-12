@@ -71,8 +71,11 @@ export function ProdutoForm({ produto }: Props) {
       destaque: produto?.destaque ?? false,
       ordem_destaque: produto?.ordem_destaque ?? 0,
       item_estoque_id: produto?.item_estoque_id ?? null,
+      somente_sob_encomenda: produto?.somente_sob_encomenda ?? false,
     },
   });
+
+  const sobEncomenda = form.watch("somente_sob_encomenda") ?? false;
 
   async function onSubmit(values: ProdutoCreateInput) {
     setSubmitting(true);
@@ -250,39 +253,76 @@ export function ProdutoForm({ produto }: Props) {
 
         <FormField
           control={form.control}
-          name="item_estoque_id"
+          name="somente_sob_encomenda"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Vincular a item de estoque (opcional)</FormLabel>
-              <FormControl>
-                <div>
-                  {field.value ? (
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-muted-foreground">
-                        Vinculado
-                      </span>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => field.onChange(null)}
-                      >
-                        Desvincular
-                      </Button>
-                    </div>
-                  ) : (
-                    <ItemCombobox
-                      value={null}
-                      onSelect={(it) => field.onChange(it.id)}
-                      placeholder="Vincular para baixar estoque ao confirmar pedido"
-                    />
-                  )}
-                </div>
-              </FormControl>
+              <FormLabel>Somente sob encomenda?</FormLabel>
+              <Select
+                value={field.value ? "yes" : "no"}
+                onValueChange={(v) => {
+                  const yes = v === "yes";
+                  field.onChange(yes);
+                  if (yes) form.setValue("item_estoque_id", null);
+                }}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="no">Não — pronta entrega</SelectItem>
+                  <SelectItem value="yes">
+                    Sim — Pedro encomenda após pedido
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Sob encomenda não baixa estoque e não pode ser vinculado a item
+                de estoque.
+              </p>
               <FormMessage />
             </FormItem>
           )}
         />
+
+        {sobEncomenda ? null : (
+          <FormField
+            control={form.control}
+            name="item_estoque_id"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Vincular a item de estoque (opcional)</FormLabel>
+                <FormControl>
+                  <div>
+                    {field.value ? (
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">
+                          Vinculado
+                        </span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => field.onChange(null)}
+                        >
+                          Desvincular
+                        </Button>
+                      </div>
+                    ) : (
+                      <ItemCombobox
+                        value={null}
+                        onSelect={(it) => field.onChange(it.id)}
+                        placeholder="Vincular para baixar estoque ao confirmar pedido"
+                      />
+                    )}
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
 
         <div className="grid gap-4 md:grid-cols-3">
           <FormField

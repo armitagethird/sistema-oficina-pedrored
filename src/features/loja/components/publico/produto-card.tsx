@@ -3,15 +3,23 @@ import { PackageIcon } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { formatBRL } from "@/shared/format/money";
-import type { Produto } from "../../types";
+import { SALDO_BAIXO_THRESHOLD, type ProdutoComEstoque } from "../../types";
 
-export function ProdutoCard({ produto }: { produto: Produto }) {
+export function ProdutoCard({ produto }: { produto: ProdutoComEstoque }) {
   const fotos = Array.isArray(produto.fotos) ? (produto.fotos as string[]) : [];
   const fotoPrincipal = fotos[0];
   const temPromocao =
     produto.preco_promocional != null &&
     Number(produto.preco_promocional) > 0 &&
     Number(produto.preco_promocional) < Number(produto.preco);
+
+  const sobEncomenda = produto.somente_sob_encomenda;
+  const saldo = produto.quantidade_estoque;
+  const saldoBaixo =
+    !sobEncomenda &&
+    saldo != null &&
+    saldo > 0 &&
+    saldo <= SALDO_BAIXO_THRESHOLD;
 
   return (
     <Link
@@ -59,6 +67,21 @@ export function ProdutoCard({ produto }: { produto: Produto }) {
             </span>
           ) : null}
         </div>
+        {sobEncomenda ? (
+          <Badge
+            variant="outline"
+            className="w-fit border-amber-500/50 text-amber-700 dark:text-amber-300"
+          >
+            Sob encomenda
+          </Badge>
+        ) : saldoBaixo ? (
+          <Badge
+            variant="outline"
+            className="w-fit border-orange-500/50 text-orange-700 dark:text-orange-300"
+          >
+            {saldo === 1 ? "Última unidade" : `Últimas ${saldo} unidades`}
+          </Badge>
+        ) : null}
       </div>
     </Link>
   );

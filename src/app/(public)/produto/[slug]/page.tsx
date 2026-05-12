@@ -2,10 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeftIcon } from "lucide-react";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AddCarrinhoButton } from "@/features/loja/components/publico/add-carrinho-button";
 import { ProdutoGaleria } from "@/features/loja/components/publico/produto-galeria";
 import { getProdutoBySlug } from "@/features/loja/queries";
+import { SALDO_BAIXO_THRESHOLD } from "@/features/loja/types";
 import { formatBRL } from "@/shared/format/money";
 
 type Params = Promise<{ slug: string }>;
@@ -27,6 +29,17 @@ export default async function ProdutoPage({
   const precoFinal = Number(
     temPromocao ? (produto.preco_promocional as number) : produto.preco,
   );
+
+  const sobEncomenda = produto.somente_sob_encomenda;
+  const saldo = produto.quantidade_estoque;
+  const saldoBaixo =
+    !sobEncomenda &&
+    saldo != null &&
+    saldo > 0 &&
+    saldo <= SALDO_BAIXO_THRESHOLD;
+  const availability = sobEncomenda
+    ? "https://schema.org/BackOrder"
+    : "https://schema.org/InStock";
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-4 px-4 py-6 md:px-6 md:py-10">
@@ -52,6 +65,21 @@ export default async function ProdutoPage({
               </span>
             ) : null}
           </div>
+          {sobEncomenda ? (
+            <Badge
+              variant="outline"
+              className="w-fit border-amber-500/50 text-amber-700 dark:text-amber-300"
+            >
+              Sob encomenda — Pedro confirma o prazo no WhatsApp
+            </Badge>
+          ) : saldoBaixo ? (
+            <Badge
+              variant="outline"
+              className="w-fit border-orange-500/50 text-orange-700 dark:text-orange-300"
+            >
+              {saldo === 1 ? "Última unidade" : `Últimas ${saldo} unidades`}
+            </Badge>
+          ) : null}
 
           {produto.descricao ? (
             <p className="whitespace-pre-wrap text-sm text-muted-foreground">
@@ -93,7 +121,7 @@ export default async function ProdutoPage({
               "@type": "Offer",
               price: precoFinal.toFixed(2),
               priceCurrency: "BRL",
-              availability: "https://schema.org/InStock",
+              availability,
             },
           }),
         }}
