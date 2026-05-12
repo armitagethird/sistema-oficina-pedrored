@@ -39,6 +39,108 @@ export type Database = {
   }
   public: {
     Tables: {
+      agendamentos: {
+        Row: {
+          atualizado_em: string
+          cliente_id: string
+          criado_em: string
+          data: string
+          descricao: string
+          id: string
+          observacoes: string | null
+          os_id: string | null
+          periodo: Database["public"]["Enums"]["agenda_periodo"]
+          status: Database["public"]["Enums"]["agenda_status"]
+          veiculo_id: string | null
+        }
+        Insert: {
+          atualizado_em?: string
+          cliente_id: string
+          criado_em?: string
+          data: string
+          descricao: string
+          id?: string
+          observacoes?: string | null
+          os_id?: string | null
+          periodo: Database["public"]["Enums"]["agenda_periodo"]
+          status?: Database["public"]["Enums"]["agenda_status"]
+          veiculo_id?: string | null
+        }
+        Update: {
+          atualizado_em?: string
+          cliente_id?: string
+          criado_em?: string
+          data?: string
+          descricao?: string
+          id?: string
+          observacoes?: string | null
+          os_id?: string | null
+          periodo?: Database["public"]["Enums"]["agenda_periodo"]
+          status?: Database["public"]["Enums"]["agenda_status"]
+          veiculo_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agendamentos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agendamentos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "view_contas_a_receber"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "agendamentos_os_id_fkey"
+            columns: ["os_id"]
+            isOneToOne: false
+            referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agendamentos_os_id_fkey"
+            columns: ["os_id"]
+            isOneToOne: false
+            referencedRelation: "view_capital_investido"
+            referencedColumns: ["os_id"]
+          },
+          {
+            foreignKeyName: "agendamentos_veiculo_id_fkey"
+            columns: ["veiculo_id"]
+            isOneToOne: false
+            referencedRelation: "veiculos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      capacidade_overrides: {
+        Row: {
+          capacidade: number
+          data: string
+          id: string
+          motivo: string | null
+          periodo: Database["public"]["Enums"]["agenda_periodo"]
+        }
+        Insert: {
+          capacidade: number
+          data: string
+          id?: string
+          motivo?: string | null
+          periodo: Database["public"]["Enums"]["agenda_periodo"]
+        }
+        Update: {
+          capacidade?: number
+          data?: string
+          id?: string
+          motivo?: string | null
+          periodo?: Database["public"]["Enums"]["agenda_periodo"]
+        }
+        Relationships: []
+      }
       categorias_estoque: {
         Row: {
           criado_em: string
@@ -426,6 +528,7 @@ export type Database = {
       }
       ordens_servico: {
         Row: {
+          agendamento_id: string | null
           atualizado_em: string
           cliente_id: string
           criado_em: string
@@ -444,6 +547,7 @@ export type Database = {
           veiculo_id: string
         }
         Insert: {
+          agendamento_id?: string | null
           atualizado_em?: string
           cliente_id: string
           criado_em?: string
@@ -462,6 +566,7 @@ export type Database = {
           veiculo_id: string
         }
         Update: {
+          agendamento_id?: string | null
           atualizado_em?: string
           cliente_id?: string
           criado_em?: string
@@ -480,6 +585,13 @@ export type Database = {
           veiculo_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "ordens_servico_agendamento_id_fkey"
+            columns: ["agendamento_id"]
+            isOneToOne: false
+            referencedRelation: "agendamentos"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "ordens_servico_cliente_id_fkey"
             columns: ["cliente_id"]
@@ -1004,6 +1116,24 @@ export type Database = {
           },
         ]
       }
+      settings: {
+        Row: {
+          chave: string
+          descricao: string | null
+          valor: string
+        }
+        Insert: {
+          chave: string
+          descricao?: string | null
+          valor: string
+        }
+        Update: {
+          chave?: string
+          descricao?: string | null
+          valor?: string
+        }
+        Relationships: []
+      }
       veiculos: {
         Row: {
           ano: number | null
@@ -1214,6 +1344,19 @@ export type Database = {
         Returns: string
       }
       marca_pagamentos_atrasados: { Args: never; Returns: number }
+      ocupacao_dia: {
+        Args: {
+          p_data: string
+          p_periodo: Database["public"]["Enums"]["agenda_periodo"]
+        }
+        Returns: {
+          capacidade_efetiva: number
+          capacidade_override: number
+          capacidade_padrao: number
+          disponivel: number
+          ocupados: number
+        }[]
+      }
       recalcula_totais_os: { Args: { p_os_id: string }; Returns: undefined }
       recalcula_total_pedido_fornecedor: {
         Args: { p_pedido_id: string }
@@ -1221,6 +1364,14 @@ export type Database = {
       }
     }
     Enums: {
+      agenda_periodo: "manha" | "tarde"
+      agenda_status:
+        | "agendado"
+        | "confirmado"
+        | "em_andamento"
+        | "concluido"
+        | "cancelado"
+        | "nao_compareceu"
       foto_momento: "entrada" | "saida" | "durante"
       link_afiliado_status:
         | "enviado"
@@ -1383,6 +1534,15 @@ export const Constants = {
   },
   public: {
     Enums: {
+      agenda_periodo: ["manha", "tarde"],
+      agenda_status: [
+        "agendado",
+        "confirmado",
+        "em_andamento",
+        "concluido",
+        "cancelado",
+        "nao_compareceu",
+      ],
       foto_momento: ["entrada", "saida", "durante"],
       link_afiliado_status: [
         "enviado",
