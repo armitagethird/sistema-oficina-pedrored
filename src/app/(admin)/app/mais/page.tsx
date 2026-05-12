@@ -1,8 +1,8 @@
 import Link from "next/link";
 import {
   BoxIcon,
-  CalendarIcon,
   FactoryIcon,
+  MessageCircleIcon,
   PackageIcon,
   ReceiptIcon,
   Settings2Icon,
@@ -19,6 +19,12 @@ const ITENS: {
   icon: typeof BoxIcon;
   disabled?: boolean;
 }[] = [
+  {
+    href: "/app/whatsapp",
+    label: "WhatsApp",
+    description: "Mensagens, templates e crons",
+    icon: MessageCircleIcon,
+  },
   {
     href: "/app/loja",
     label: "Loja PedroRed",
@@ -60,13 +66,6 @@ const ITENS: {
     label: "Configurações da loja",
     description: "Chave PIX, domínio",
     icon: Settings2Icon,
-  },
-  {
-    href: "#",
-    label: "Agenda",
-    description: "Em breve — Sprint 4",
-    icon: CalendarIcon,
-    disabled: true,
   },
 ];
 

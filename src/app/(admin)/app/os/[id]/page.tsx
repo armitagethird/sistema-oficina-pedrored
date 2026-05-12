@@ -18,6 +18,8 @@ import { getOSDetalhe } from "@/features/ordens/queries";
 import { getAgendamento } from "@/features/agenda/queries";
 import { PERIODO_LABEL } from "@/features/agenda/types";
 import { descreveVeiculo } from "@/features/veiculos/types";
+import { EnviarRapidoDialog } from "@/features/whatsapp/components/enviar-rapido-dialog";
+import { formatBRL } from "@/shared/format/money";
 
 type Params = Promise<{ id: string }>;
 
@@ -87,6 +89,17 @@ export default async function OSDetalhePage({ params }: { params: Params }) {
             <span className="text-muted-foreground">Veículo:</span>{" "}
             <span className="font-medium">{descreveVeiculo(os.veiculo)}</span>
           </Link>
+          {os.cliente?.telefone && Number(os.total_geral) > 0 && (
+            <div className="mt-2 flex flex-wrap gap-2">
+              <EnviarRapidoDialog
+                telefone={os.cliente.telefone}
+                clienteId={os.cliente.id}
+                osId={os.id}
+                triggerLabel="Enviar PIX por WhatsApp"
+                conteudoSugerido={`Olá ${os.cliente.nome.split(" ")[0]}, OS #${os.numero} pronta. Total: ${formatBRL(os.total_geral ?? 0)}. PIX: ${process.env.PIX_CHAVE ?? "(configurar PIX_CHAVE)"}`}
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
 
