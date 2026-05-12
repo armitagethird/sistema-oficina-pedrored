@@ -44,7 +44,7 @@ export const ajusteSchema = z.object({
 
 export const categoriaSchema = z.object({
   nome: z.string().min(1, "Nome obrigatório").max(80),
-  ordem: z.number().int().default(0),
+  ordem: z.number().int().optional(),
 });
 
 export type ItemCreateInput = z.infer<typeof itemCreateSchema>;
