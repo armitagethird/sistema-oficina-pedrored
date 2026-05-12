@@ -18,6 +18,7 @@ export const CONTATO = {
     cidade: "São Luís",
     estado: "MA",
     cep: "65073-590",
+    mapsShareUrl: "https://share.google/C10nmYooVJJVGqW6c",
   },
   creditoDev: {
     nome: "Vibe Surf Dev",
@@ -31,6 +32,10 @@ export function getEnderecoCompleto(): string {
 }
 
 export function getMapsUrl(): string {
+  return CONTATO.endereco.mapsShareUrl;
+}
+
+export function getMapsEmbedUrl(): string {
   const query = encodeURIComponent(getEnderecoCompleto());
-  return `https://www.google.com/maps/search/?api=1&query=${query}`;
+  return `https://www.google.com/maps?q=${query}&z=16&output=embed`;
 }
