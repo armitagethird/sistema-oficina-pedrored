@@ -15,6 +15,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  ItemCombobox,
+  type ItemComboboxValue,
+} from "@/features/estoque/components/item-combobox";
 import { ItemizedList } from "@/shared/components/itemized-list";
 import { MoneyInput } from "@/shared/components/money-input";
 import { formatBRL } from "@/shared/format/money";
@@ -40,6 +44,7 @@ type Draft = {
   link_ml: string;
   fornecedor_nome: string;
   status: PecaStatus;
+  item_estoque_id: string | null;
 };
 
 function toDraft(p: OsPeca): Draft {
@@ -53,6 +58,7 @@ function toDraft(p: OsPeca): Draft {
     link_ml: p.link_ml ?? "",
     fornecedor_nome: p.fornecedor_nome ?? "",
     status: p.status,
+    item_estoque_id: p.item_estoque_id ?? null,
   };
 }
 
@@ -84,8 +90,8 @@ export function OsPecasItemized({
     );
   }
 
-  function persist(index: number) {
-    const draft = items[index];
+  function persist(index: number, override?: Partial<Draft>) {
+    const draft = { ...items[index], ...override };
     if (!draft) return;
     const custo = Number(draft.custo_unitario);
     const preco = Number(draft.preco_venda_unitario);
@@ -94,6 +100,7 @@ export function OsPecasItemized({
     if (!Number.isFinite(custo) || custo < 0) return;
     if (!Number.isFinite(preco) || preco < 0) return;
     if (!Number.isFinite(qtd) || qtd <= 0) return;
+    if (draft.origem === "estoque" && !draft.item_estoque_id) return;
 
     const payload = {
       descricao: draft.descricao,
@@ -104,6 +111,7 @@ export function OsPecasItemized({
       link_ml: draft.link_ml,
       fornecedor_nome: draft.fornecedor_nome,
       status: draft.status,
+      item_estoque_id: draft.item_estoque_id,
     };
 
     startTransition(async () => {
@@ -134,6 +142,7 @@ export function OsPecasItemized({
         link_ml: "",
         fornecedor_nome: "",
         status: "pendente",
+        item_estoque_id: null,
       },
     ]);
   }
@@ -153,6 +162,28 @@ export function OsPecasItemized({
       }
       setItems((curr) => curr.filter((_, i) => i !== index));
     });
+  }
+
+  function handleSelectItemEstoque(index: number, item: ItemComboboxValue) {
+    const patch: Partial<Draft> = {
+      item_estoque_id: item.id,
+      descricao: item.descricao,
+      custo_unitario: Number(item.custo_medio).toFixed(2),
+      preco_venda_unitario: Number(item.preco_venda).toFixed(2),
+    };
+    update(index, patch);
+    persist(index, patch);
+  }
+
+  function handleChangeOrigem(index: number, novaOrigem: PecaOrigem) {
+    const patch: Partial<Draft> = {
+      origem: novaOrigem,
+      ...(novaOrigem !== "estoque" && { item_estoque_id: null }),
+    };
+    update(index, patch);
+    if (novaOrigem !== "estoque" || items[index]?.item_estoque_id) {
+      persist(index, patch);
+    }
   }
 
   const totalVenda = items.reduce((acc, it) => {
@@ -187,24 +218,32 @@ export function OsPecasItemized({
                   htmlFor={`peca-${index}-descricao`}
                   className="text-xs text-muted-foreground"
                 >
-                  Descrição
+                  {item.origem === "estoque" ? "Item de estoque" : "Descrição"}
                 </Label>
-                <Input
-                  id={`peca-${index}-descricao`}
-                  value={item.descricao}
-                  onChange={(e) => update(index, { descricao: e.target.value })}
-                  onBlur={() => persist(index)}
-                  placeholder="Ex: Filtro de óleo MANN"
-                />
+                {item.origem === "estoque" ? (
+                  <ItemCombobox
+                    value={item.item_estoque_id}
+                    onSelect={(it) => handleSelectItemEstoque(index, it)}
+                  />
+                ) : (
+                  <Input
+                    id={`peca-${index}-descricao`}
+                    value={item.descricao}
+                    onChange={(e) =>
+                      update(index, { descricao: e.target.value })
+                    }
+                    onBlur={() => persist(index)}
+                    placeholder="Ex: Filtro de óleo MANN"
+                  />
+                )}
               </div>
               <div className="flex flex-col gap-1">
                 <Label className="text-xs text-muted-foreground">Origem</Label>
                 <Select
                   value={item.origem}
-                  onValueChange={(v) => {
-                    update(index, { origem: v as PecaOrigem });
-                    persist(index);
-                  }}
+                  onValueChange={(v) =>
+                    handleChangeOrigem(index, v as PecaOrigem)
+                  }
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue />
@@ -227,7 +266,7 @@ export function OsPecasItemized({
                   value={item.custo_unitario}
                   onValueChange={(v) => {
                     update(index, { custo_unitario: v });
-                    persist(index);
+                    persist(index, { custo_unitario: v });
                   }}
                 />
               </div>
@@ -237,7 +276,7 @@ export function OsPecasItemized({
                   value={item.preco_venda_unitario}
                   onValueChange={(v) => {
                     update(index, { preco_venda_unitario: v });
-                    persist(index);
+                    persist(index, { preco_venda_unitario: v });
                   }}
                 />
               </div>
@@ -264,8 +303,9 @@ export function OsPecasItemized({
                 <Select
                   value={item.status}
                   onValueChange={(v) => {
-                    update(index, { status: v as PecaStatus });
-                    persist(index);
+                    const patch = { status: v as PecaStatus };
+                    update(index, patch);
+                    persist(index, patch);
                   }}
                 >
                   <SelectTrigger className="w-full">
@@ -282,43 +322,45 @@ export function OsPecasItemized({
               </div>
             </div>
 
-            <div className="grid gap-2 md:grid-cols-2">
-              <div className="flex flex-col gap-1">
-                <Label
-                  htmlFor={`peca-${index}-fornecedor`}
-                  className="text-xs text-muted-foreground"
-                >
-                  Fornecedor
-                </Label>
-                <Input
-                  id={`peca-${index}-fornecedor`}
-                  value={item.fornecedor_nome}
-                  onChange={(e) =>
-                    update(index, { fornecedor_nome: e.target.value })
-                  }
-                  onBlur={() => persist(index)}
-                  placeholder="Nome do fornecedor"
-                />
-              </div>
-              {item.origem === "mercado_livre_afiliado" ? (
+            {item.origem !== "estoque" ? (
+              <div className="grid gap-2 md:grid-cols-2">
                 <div className="flex flex-col gap-1">
                   <Label
-                    htmlFor={`peca-${index}-link`}
+                    htmlFor={`peca-${index}-fornecedor`}
                     className="text-xs text-muted-foreground"
                   >
-                    Link Mercado Livre
+                    Fornecedor
                   </Label>
                   <Input
-                    id={`peca-${index}-link`}
-                    type="url"
-                    value={item.link_ml}
-                    onChange={(e) => update(index, { link_ml: e.target.value })}
+                    id={`peca-${index}-fornecedor`}
+                    value={item.fornecedor_nome}
+                    onChange={(e) =>
+                      update(index, { fornecedor_nome: e.target.value })
+                    }
                     onBlur={() => persist(index)}
-                    placeholder="https://produto.mercadolivre.com.br/..."
+                    placeholder="Nome do fornecedor"
                   />
                 </div>
-              ) : null}
-            </div>
+                {item.origem === "mercado_livre_afiliado" ? (
+                  <div className="flex flex-col gap-1">
+                    <Label
+                      htmlFor={`peca-${index}-link`}
+                      className="text-xs text-muted-foreground"
+                    >
+                      Link Mercado Livre
+                    </Label>
+                    <Input
+                      id={`peca-${index}-link`}
+                      type="url"
+                      value={item.link_ml}
+                      onChange={(e) => update(index, { link_ml: e.target.value })}
+                      onBlur={() => persist(index)}
+                      placeholder="https://produto.mercadolivre.com.br/..."
+                    />
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
 
             {item.id && vinculoPorPecaId.get(item.id) ? (
               <Link

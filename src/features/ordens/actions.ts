@@ -278,6 +278,16 @@ export async function addPeca(
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Dados inválidos" };
   }
 
+  if (
+    parsed.data.origem === "estoque" &&
+    !parsed.data.item_estoque_id
+  ) {
+    return {
+      ok: false,
+      error: "Selecione um item de estoque",
+    };
+  }
+
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("os_pecas")
@@ -291,13 +301,14 @@ export async function addPeca(
       link_ml: emptyToNull(parsed.data.link_ml ?? null),
       fornecedor_nome: emptyToNull(parsed.data.fornecedor_nome ?? null),
       status: (parsed.data.status ?? "pendente") as PecaStatus,
+      item_estoque_id: parsed.data.item_estoque_id ?? null,
     })
     .select("*")
     .single();
 
   if (error) {
     console.error("addPeca:", error);
-    return { ok: false, error: "Não foi possível adicionar a peça" };
+    return { ok: false, error: error.message ?? "Não foi possível adicionar a peça" };
   }
 
   revalidateOS(osId);
@@ -318,6 +329,8 @@ export async function updatePeca(
     patch.link_ml = emptyToNull((patch.link_ml as string | null) ?? null);
   if ("fornecedor_nome" in patch)
     patch.fornecedor_nome = emptyToNull((patch.fornecedor_nome as string | null) ?? null);
+  if ("item_estoque_id" in patch)
+    patch.item_estoque_id = (patch.item_estoque_id as string | null) ?? null;
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -329,7 +342,7 @@ export async function updatePeca(
 
   if (error) {
     console.error("updatePeca:", error);
-    return { ok: false, error: "Não foi possível atualizar a peça" };
+    return { ok: false, error: error.message ?? "Não foi possível atualizar a peça" };
   }
 
   revalidateOS(data.os_id);
