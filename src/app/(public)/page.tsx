@@ -4,6 +4,7 @@ import { ArrowRightIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CanalYouTube } from "@/features/loja/components/publico/canal-youtube";
 import { Hero } from "@/features/loja/components/publico/hero";
+import { MapaOficina } from "@/features/loja/components/publico/mapa-oficina";
 import { ProdutoGrid } from "@/features/loja/components/publico/produto-grid";
 import { CONTATO } from "@/features/loja/contato";
 import {
@@ -21,7 +22,7 @@ export default async function HomePage() {
 
   return (
     <div>
-      <Hero />
+      <Hero videos={videos} />
       <div className="mx-auto flex max-w-6xl flex-col gap-10 px-4 py-8 md:px-6 md:py-12">
         {destaques.length > 0 ? (
           <section className="flex flex-col gap-4">
@@ -39,7 +40,10 @@ export default async function HomePage() {
           </section>
         ) : null}
 
-        <CanalYouTube videos={videos} />
+        {/* No desktop a seção do canal já aparece dentro do hero — só mostra aqui no mobile */}
+        <div className="md:hidden">
+          <CanalYouTube videos={videos} />
+        </div>
 
         {recentes.items.length > 0 ? (
           <section className="flex flex-col gap-4">
@@ -70,6 +74,8 @@ export default async function HomePage() {
           </p>
         )}
       </div>
+
+      <MapaOficina />
     </div>
   );
 }

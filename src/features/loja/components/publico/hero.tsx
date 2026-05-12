@@ -5,6 +5,8 @@ import { ArrowRightIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import { CONTATO } from "../../contato";
+import type { VideoYoutube } from "../../youtube";
+import { VideoCard } from "./canal-youtube";
 
 const HERO_IMAGE = "/pedrored-hero.jpg";
 const HERO_ALT = "Pedro, mecânico responsável pela PedroRed";
@@ -37,7 +39,7 @@ function HeroContent() {
   );
 }
 
-export function Hero() {
+export function Hero({ videos = [] }: { videos?: VideoYoutube[] }) {
   return (
     <section className="border-b">
       {/* Mobile: full-bleed com foto de fundo + gradiente */}
@@ -59,20 +61,50 @@ export function Hero() {
         </div>
       </div>
 
-      {/* Desktop: split panel — texto à esquerda, foto contida à direita */}
+      {/* Desktop: split panel + strip de vídeos do YouTube embaixo */}
       <div className="hidden md:block">
-        <div className="mx-auto grid max-w-6xl grid-cols-[1.1fr_0.9fr] items-center gap-10 px-6 py-16">
-          <HeroContent />
-          <div className="relative aspect-[4/5] overflow-hidden rounded-xl border bg-muted shadow-sm">
-            <Image
-              src={HERO_IMAGE}
-              alt={HERO_ALT}
-              fill
-              sizes="(min-width: 1024px) 480px, 50vw"
-              priority
-              className="object-cover object-[center_15%]"
-            />
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="grid grid-cols-[1.1fr_0.9fr] items-center gap-10 pb-10 pt-14">
+            <HeroContent />
+            <div className="relative aspect-[4/5] overflow-hidden rounded-xl border bg-muted shadow-sm">
+              <Image
+                src={HERO_IMAGE}
+                alt={HERO_ALT}
+                fill
+                sizes="(min-width: 1024px) 480px, 50vw"
+                priority
+                className="object-cover object-[center_15%]"
+              />
+            </div>
           </div>
+
+          {videos.length > 0 ? (
+            <div className="border-t pb-12 pt-8">
+              <header className="mb-4 flex items-end justify-between gap-3">
+                <div className="flex items-baseline gap-3">
+                  <h2 className="text-lg font-semibold tracking-tight">
+                    Pedro no YouTube
+                  </h2>
+                  <span className="text-xs text-muted-foreground">
+                    Bastidores, reviews e tunagem
+                  </span>
+                </div>
+                <a
+                  href={CONTATO.youtube.canal}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Ver canal <ArrowRightIcon className="size-4" />
+                </a>
+              </header>
+              <div className="grid grid-cols-3 gap-4">
+                {videos.slice(0, 3).map((video) => (
+                  <VideoCard key={video.id} video={video} />
+                ))}
+              </div>
+            </div>
+          ) : null}
         </div>
       </div>
     </section>
