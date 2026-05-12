@@ -6,7 +6,7 @@
 
 ## Estado atual
 
-**Sprints 0/1/2/3 aplicados em 2026-05-11.** Schema no Supabase remoto (`fcaxivdvhgekomvwbrvr`, region `sa-east-1`).
+**Sprints 0/1/2/3/6 aplicados em 2026-05-11.** Schema no Supabase remoto (`fcaxivdvhgekomvwbrvr`, region `sa-east-1`).
 
 ### Tabelas
 
@@ -24,7 +24,10 @@
 - **`links_afiliado_enviados`** — `id uuid`, `cliente_id uuid not null` → `clientes(id) ON DELETE RESTRICT`, `os_id uuid?` → `ordens_servico(id) ON DELETE SET NULL`, `link text not null`, `descricao_peca text not null`, `preco_estimado/comissao_estimada/comissao_recebida numeric(12,2)?`, `status link_afiliado_status default 'enviado'`, `data_envio timestamptz default now()`, `data_compra/data_comissao timestamptz?`, `observacoes text?`. RLS authenticated. Indexes em cliente, status, os.
 - **`categorias_estoque`** (8 rows seed Sprint 3) — `id uuid`, `nome text not null unique`, `ordem int default 0`, `criado_em`. RLS `categorias_authenticated_all`. Seed: Óleo, Filtro, Pneu, Roda, Fluido, Lâmpada, Palheta, Outro.
 - **`itens_estoque`** — `id uuid`, `categoria_id uuid not null` → `categorias_estoque(id) ON DELETE RESTRICT`, `descricao text not null`, `sku text?`, `unidade text default 'un'`, `quantidade_atual numeric(12,3) default 0` (atualizada via RPC `aplicar_movimentacao_estoque`), `custo_medio numeric(12,2) default 0` (médio ponderado, recalculado nas entradas), `preco_venda numeric(12,2) default 0`, `alerta_minimo numeric(12,3) default 0`, `ativo bool default true`, `observacoes text?`, timestamps + soft delete. RLS `itens_authenticated_all`. Indexes parciais: `idx_itens_categoria`, `idx_itens_descricao`, `idx_itens_sku`. Trigger `trg_itens_estoque_atualizado_em`.
-- **`movimentacoes_estoque`** — `id uuid`, `item_id uuid not null` → `itens_estoque(id) ON DELETE RESTRICT`, `tipo movimentacao_tipo`, `quantidade numeric(12,3) > 0`, `custo_unitario numeric(12,2)?`, `os_id/os_peca_id/pedido_loja_id/pedido_fornecedor_id` FKs opcionais (`pedido_loja_id` ganha FK na Sprint 6), `ajuste_motivo text?`, `saldo_apos numeric(12,3)` (snapshot), `criado_em`. RLS `movimentacoes_authenticated_all`. Indexes em item, tipo, criado_em, os, pedido_fornecedor (parciais).
+- **`movimentacoes_estoque`** — `id uuid`, `item_id uuid not null` → `itens_estoque(id) ON DELETE RESTRICT`, `tipo movimentacao_tipo`, `quantidade numeric(12,3) > 0`, `custo_unitario numeric(12,2)?`, `os_id/os_peca_id/pedido_loja_id/pedido_fornecedor_id` FKs opcionais (`pedido_loja_id` recebe FK estruturada na Sprint 6), `ajuste_motivo text?`, `saldo_apos numeric(12,3)` (snapshot), `criado_em`. RLS `movimentacoes_authenticated_all`. Indexes em item, tipo, criado_em, os, pedido_fornecedor (parciais).
+- **`produtos_loja`** (Sprint 6) — `id uuid`, `item_estoque_id uuid?` → `itens_estoque(id) ON DELETE SET NULL`, `titulo text not null`, `slug text not null unique` (gerado por `gerar_slug_unico`), `descricao text?`, `fotos jsonb default '[]'` (array de URLs públicas), `preco numeric(12,2) check >= 0`, `preco_promocional numeric(12,2)?`, `estoque_manual int?`, `frete_info text?`, `status produto_status default 'ativo'`, `destaque bool default false`, `ordem_destaque int default 0`, `metadata jsonb default '{}'`, timestamps. RLS: `produtos_loja_publico_select_ativos` (anon+auth SELECT onde status='ativo') + `produtos_loja_admin_all`. Indexes: status, slug, gin tsv(titulo), parcial destaque. Trigger `trg_produtos_atualizado_em`.
+- **`pedidos_loja`** (Sprint 6) — `id uuid`, `numero serial unique`, `cliente_nome/telefone/email?/endereco jsonb`, `valor_subtotal/valor_frete/valor_total numeric(12,2)`, `metodo_pagamento text default 'pix'`, `comprovante_url text?` (path no bucket `loja-comprovantes`), `status pedido_loja_status default 'aguardando_pagamento'`, `observacoes_cliente/_internas text?`, timestamps + `pago_em/enviado_em timestamptz?`. RLS: `pedidos_loja_admin_all` apenas (inserts via server action com service_role; reads públicos via server action `getPedidoPublico` validando telefone). Indexes em status, criado_em desc, telefone. Trigger `trg_pedidos_loja_atualizado_em`.
+- **`itens_pedido_loja`** (Sprint 6) — `id uuid`, `pedido_id uuid not null` → `pedidos_loja(id) ON DELETE CASCADE`, `produto_id uuid not null` → `produtos_loja(id) ON DELETE RESTRICT`, `titulo_snapshot text not null`, `preco_unitario numeric(12,2) not null`, `quantidade int > 0`, `subtotal numeric(12,2) generated stored = preco_unitario * quantidade`, `criado_em`. RLS `itens_pedido_loja_admin_all`. Index `idx_itens_pedido_loja(pedido_id)`.
 
 ### Enums (Sprint 1)
 
@@ -43,6 +46,11 @@
 ### Enums (Sprint 3)
 
 - `movimentacao_tipo` — `entrada | saida_os | saida_loja | ajuste`
+
+### Enums (Sprint 6)
+
+- `produto_status` — `ativo | inativo | esgotado`
+- `pedido_loja_status` — `aguardando_pagamento | pagamento_em_analise | pago | em_separacao | enviado | retirado | cancelado`
 
 ### Funções / triggers (Sprint 1)
 
@@ -70,6 +78,19 @@
 ### Views (Sprint 3)
 
 - `view_itens_abaixo_minimo` — `select * from itens_estoque where deletado_em is null and ativo=true and quantidade_atual <= alerta_minimo`. Usada pelo card do dashboard.
+
+### Funções (Sprint 6)
+
+- `gerar_slug_unico(p_titulo text, p_id uuid default null) returns text` — gera slug ascii-only a partir do título, sufixa `-N` até ser único. Recebe `p_id` para permitir update sem colidir com o próprio.
+
+### Storage (Sprint 6)
+
+- Bucket `loja-produtos` (público) — fotos de produtos. Policies: SELECT anon+auth, INSERT/DELETE authenticated only. Caminhos: `${produtoId}/${nanoid()}.${ext}`.
+- Bucket `loja-comprovantes` (privado) — comprovantes PIX dos clientes. Policies: SELECT authenticated only. INSERTs feitos via server action com `service_role` (sem policy anon direta). Caminho: `${pedidoId}.{ext}`.
+
+### Constraints adicionais (Sprint 6)
+
+- `movimentacoes_estoque.pedido_loja_id` ganha FK estruturada `fk_mov_pedido_loja → pedidos_loja(id) ON DELETE SET NULL`.
 
 ### Storage
 
