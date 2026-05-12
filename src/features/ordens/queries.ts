@@ -1,6 +1,8 @@
 import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
+import type { Pagamento } from "@/features/financeiro/types";
+import type { LinkAfiliadoListItem } from "@/features/ml-afiliado/queries";
 import type {
   OS,
   OSStatus,
@@ -31,12 +33,21 @@ export type OSListItem = OS & {
   };
 };
 
+export type PedidoVinculoPeca = {
+  os_peca_id: string;
+  pedido_id: string;
+  pedido_numero: number;
+};
+
 export type OSDetalhe = OS & {
   cliente: Cliente | null;
   veiculo: Veiculo;
   servicos: OsServico[];
   pecas: OsPeca[];
   fotos: OsFoto[];
+  pagamentos: Pagamento[];
+  links: LinkAfiliadoListItem[];
+  pedidos_vinculados: PedidoVinculoPeca[];
 };
 
 export type ListOSOptions = {
@@ -100,7 +111,7 @@ export async function getOSDetalhe(id: string): Promise<OSDetalhe | null> {
   if (osErr) throw new Error(`Erro ao buscar OS: ${osErr.message}`);
   if (!os) return null;
 
-  const [servicos, pecas, fotos] = await Promise.all([
+  const [servicos, pecas, fotos, pagamentos, links, vinculos] = await Promise.all([
     supabase
       .from("os_servicos")
       .select("*")
@@ -118,17 +129,55 @@ export async function getOSDetalhe(id: string): Promise<OSDetalhe | null> {
       .select("*")
       .eq("os_id", id)
       .order("criado_em", { ascending: true }),
+    supabase
+      .from("pagamentos")
+      .select("*")
+      .eq("os_id", id)
+      .order("ordem", { ascending: true })
+      .order("criado_em", { ascending: true }),
+    supabase
+      .from("links_afiliado_enviados")
+      .select("*, cliente:clientes(id, nome), os:ordens_servico(id, numero)")
+      .eq("os_id", id)
+      .order("data_envio", { ascending: false }),
+    supabase
+      .from("pedido_fornecedor_itens")
+      .select(
+        "os_peca_id, pedido:pedidos_fornecedor!inner(id, numero, os_id)",
+      )
+      .not("os_peca_id", "is", null)
+      .eq("pedido.os_id", id),
   ]);
 
   if (servicos.error) throw new Error(servicos.error.message);
   if (pecas.error) throw new Error(pecas.error.message);
   if (fotos.error) throw new Error(fotos.error.message);
+  if (pagamentos.error) throw new Error(pagamentos.error.message);
+  if (links.error) throw new Error(links.error.message);
+  if (vinculos.error) throw new Error(vinculos.error.message);
+
+  type VinculoRow = {
+    os_peca_id: string | null;
+    pedido: { id: string; numero: number } | null;
+  };
+  const pedidos_vinculados: PedidoVinculoPeca[] = (
+    (vinculos.data ?? []) as unknown as VinculoRow[]
+  )
+    .filter((v) => v.os_peca_id && v.pedido)
+    .map((v) => ({
+      os_peca_id: v.os_peca_id!,
+      pedido_id: v.pedido!.id,
+      pedido_numero: v.pedido!.numero,
+    }));
 
   return {
     ...(os as OSDetalhe),
     servicos: servicos.data ?? [],
     pecas: pecas.data ?? [],
     fotos: fotos.data ?? [],
+    pagamentos: pagamentos.data ?? [],
+    links: (links.data ?? []) as LinkAfiliadoListItem[],
+    pedidos_vinculados,
   };
 }
 

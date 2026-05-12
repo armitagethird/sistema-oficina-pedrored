@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import {
   CarIcon,
   ChevronLeftIcon,
+  LinkIcon,
   MailIcon,
   PencilIcon,
   PhoneIcon,
@@ -14,6 +15,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCliente } from "@/features/clientes/queries";
 import type { EnderecoCliente } from "@/features/clientes/types";
+import { LinksList } from "@/features/ml-afiliado/components/links-list";
+import { listLinksByCliente } from "@/features/ml-afiliado/queries";
 import { VeiculoCard } from "@/features/veiculos/components/veiculo-card";
 import { listVeiculosByCliente } from "@/features/veiculos/queries";
 
@@ -21,9 +24,10 @@ type Params = Promise<{ id: string }>;
 
 export default async function ClienteDetalhePage({ params }: { params: Params }) {
   const { id } = await params;
-  const [cliente, veiculos] = await Promise.all([
+  const [cliente, veiculos, links] = await Promise.all([
     getCliente(id),
     listVeiculosByCliente(id),
+    listLinksByCliente(id),
   ]);
   if (!cliente) notFound();
 
@@ -138,6 +142,20 @@ export default async function ClienteDetalhePage({ params }: { params: Params })
               ))}
             </ul>
           )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between gap-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <LinkIcon className="size-4" />
+              Links Mercado Livre ({links.length})
+            </CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <LinksList links={links} showCliente={false} />
         </CardContent>
       </Card>
 

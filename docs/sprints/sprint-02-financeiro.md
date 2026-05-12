@@ -4,7 +4,7 @@
 
 ## Status
 
-⚪ Pendente.
+🟢 Implementada (aguardando validação manual). Branch `sprint-02-financeiro`.
 
 ## Contexto
 
@@ -465,11 +465,30 @@ src/
 
 ## Bloqueios
 
-(adicione)
+Nenhum.
 
 ## Progresso
 
-(atualize)
+Implementada em 9 fases entre 2026-05-11, branch `sprint-02-financeiro`:
+
+| Fase | Commit | O que entregou |
+|------|--------|----------------|
+| A | `1f795fd` | Migration `20260601000000_init_financeiro.sql` aplicada no remoto; `src/shared/lib/cron-auth.ts`; deps `recharts` + shadcn (accordion/alert/progress); `CRON_SECRET` no template |
+| B | `906a5d4` | `src/features/fornecedores/*` completo + páginas `/app/fornecedores/{,/novo,/[id],/[id]/editar}` |
+| C | `2eade52` | `src/features/pedidos-fornecedor/*` + state machine + vinculação peça-OS + `os-combobox` reusável + 4 páginas |
+| D | `91e0546` | `src/features/financeiro/*` (parcelas, contas a receber, capital investido, gráfico 30 dias, 4 páginas `/app/financeiro/*`) |
+| E | `9806d4f` | `src/features/ml-afiliado/*` + seção no detalhe cliente |
+| F | `578fe95` | `getOSDetalhe` estendida; abas Pagamentos + Links ML no detalhe OS; badge "Pedido #N" em peças vinculadas |
+| G | `ff1d249` | `/api/cron/financeiro/marca-atrasados` + `vercel.json` (cron `0 12 * * *` = 09h BRT); `createServiceRoleClient()` |
+| H | `8aebc51` | 3 testes integração SQL (skip por padrão) + spec Playwright Sprint 2 |
+| I | (este commit) | docs atualizados (data-model, deploy, 00-overview) |
+
+**Verificação automatizada final:** typecheck/lint/115 testes (112 ativos + 3 integration skipados)/build verdes.
+
+**Pendente pro Pedro:**
+- [ ] Configurar `CRON_SECRET` em Vercel → Settings → Env Vars (production + preview)
+- [ ] Deploy do branch via PR
+- [ ] Validar manualmente os fluxos da seção "Manual (Pedro)" abaixo
 
 ## Referências
 

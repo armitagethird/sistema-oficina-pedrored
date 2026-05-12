@@ -28,6 +28,9 @@ NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
 SUPABASE_SERVICE_ROLE_KEY=eyJ...
 
+# Sprint 2+
+CRON_SECRET=<gerar com: openssl rand -hex 32>
+
 # Sprint 5+
 EVOLUTION_API_URL=https://wa.pedrored.com.br
 EVOLUTION_API_KEY=xxx
@@ -53,21 +56,30 @@ ANALYTICS_PROVIDER=gemini
 
 ### Cron jobs (Vercel Cron)
 
-Adicionar em `vercel.json` quando entrar a sprint correspondente.
+**Atenção:** Vercel cron schedules são sempre em UTC. Para 09:00 BRT (UTC-3, sem horário de verão desde 2019) use `0 12 * * *`. Cada job futuro repete o cálculo.
+
+Estado atual de `vercel.json`:
 
 ```json
 {
   "crons": [
-    { "path": "/api/cron/financeiro/marca-atrasados", "schedule": "0 9 * * *" },
-    { "path": "/api/cron/whatsapp/lembrete-d1", "schedule": "0 18 * * *" },
-    { "path": "/api/cron/whatsapp/cobranca-atraso", "schedule": "0 10 * * *" },
-    { "path": "/api/cron/whatsapp/lembrete-oleo-km", "schedule": "0 11 * * 1" },
-    { "path": "/api/cron/analytics/refresh-mvs", "schedule": "0 3 * * *" }
+    { "path": "/api/cron/financeiro/marca-atrasados", "schedule": "0 12 * * *" }
   ]
 }
 ```
 
-Jobs cron em `src/app/api/cron/*/route.ts`. Protegidos via header `Authorization: Bearer ${CRON_SECRET}` (Vercel injeta automaticamente quando cron dispara).
+Crons futuros que vão entrar conforme as sprints (referência, ainda não criados):
+
+```json
+{ "path": "/api/cron/whatsapp/lembrete-d1", "schedule": "0 21 * * *" }
+{ "path": "/api/cron/whatsapp/cobranca-atraso", "schedule": "0 13 * * *" }
+{ "path": "/api/cron/whatsapp/lembrete-oleo-km", "schedule": "0 14 * * 1" }
+{ "path": "/api/cron/analytics/refresh-mvs", "schedule": "0 6 * * *" }
+```
+
+Jobs cron em `src/app/api/cron/*/route.ts`. Cada rota chama `assertCronAuth(req)` em `src/shared/lib/cron-auth.ts`, que exige `Authorization: Bearer ${CRON_SECRET}` — Vercel injeta o header automaticamente quando dispara o cron e o env var `CRON_SECRET` existe.
+
+Rotas cron usam `createServiceRoleClient()` em vez do client padrão por não terem cookie de sessão; isso bypassa RLS, então valide a autorização **antes** de tocar qualquer dado.
 
 ## Supabase
 

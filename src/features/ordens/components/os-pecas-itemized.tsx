@@ -1,8 +1,11 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
+import { LinkIcon } from "lucide-react";
 import { toast } from "sonner";
 
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -16,6 +19,7 @@ import { ItemizedList } from "@/shared/components/itemized-list";
 import { MoneyInput } from "@/shared/components/money-input";
 import { formatBRL } from "@/shared/format/money";
 import { addPeca, removePeca, updatePeca } from "../actions";
+import type { PedidoVinculoPeca } from "../queries";
 import {
   PECA_ORIGEM_LABEL,
   PECA_ORIGEM_VALUES,
@@ -55,9 +59,11 @@ function toDraft(p: OsPeca): Draft {
 export function OsPecasItemized({
   osId,
   pecas,
+  pedidosVinculados = [],
 }: {
   osId: string;
   pecas: OsPeca[];
+  pedidosVinculados?: PedidoVinculoPeca[];
 }) {
   const [items, setItems] = React.useState<Draft[]>(pecas.map(toDraft));
   const [pending, startTransition] = React.useTransition();
@@ -65,6 +71,12 @@ export function OsPecasItemized({
   React.useEffect(() => {
     setItems(pecas.map(toDraft));
   }, [pecas]);
+
+  const vinculoPorPecaId = React.useMemo(() => {
+    const map = new Map<string, PedidoVinculoPeca>();
+    for (const v of pedidosVinculados) map.set(v.os_peca_id, v);
+    return map;
+  }, [pedidosVinculados]);
 
   function update(index: number, patch: Partial<Draft>) {
     setItems((curr) =>
@@ -307,6 +319,18 @@ export function OsPecasItemized({
                 </div>
               ) : null}
             </div>
+
+            {item.id && vinculoPorPecaId.get(item.id) ? (
+              <Link
+                href={`/app/pedidos-fornecedor/${vinculoPorPecaId.get(item.id)!.pedido_id}`}
+                className="self-start"
+              >
+                <Badge variant="secondary" className="gap-1 border-0">
+                  <LinkIcon className="size-3" />
+                  Pedido #{vinculoPorPecaId.get(item.id)!.pedido_numero}
+                </Badge>
+              </Link>
+            ) : null}
           </div>
         )}
       />
