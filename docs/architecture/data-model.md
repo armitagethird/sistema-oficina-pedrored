@@ -6,7 +6,7 @@
 
 ## Estado atual
 
-**Sprint 0/1/2 aplicados em 2026-05-11.** Schema no Supabase remoto (`fcaxivdvhgekomvwbrvr`, region `sa-east-1`).
+**Sprints 0/1/2/3 aplicados em 2026-05-11.** Schema no Supabase remoto (`fcaxivdvhgekomvwbrvr`, region `sa-east-1`).
 
 ### Tabelas
 
@@ -15,13 +15,16 @@
 - **`veiculos`** — `id uuid`, `cliente_id uuid not null` → `clientes(id) ON DELETE RESTRICT`, `modelo_id uuid?` → `vw_modelos(id) ON DELETE SET NULL`, `modelo_custom text?`, `motor text?`, `ano int?`, `placa text?`, `cor text?`, `km_atual int default 0`, `observacoes text?`, timestamps + soft delete. Constraint check: `modelo_id IS NOT NULL OR modelo_custom IS NOT NULL`. RLS: `veiculos_authenticated_all`. Indexes parciais: `idx_veiculos_cliente`, `idx_veiculos_placa`.
 - **`ordens_servico`** — `id uuid`, `numero serial unique`, `cliente_id uuid not null` → `clientes(id) ON DELETE RESTRICT`, `veiculo_id uuid not null` → `veiculos(id) ON DELETE RESTRICT`, `status os_status not null default 'aberta'`, `descricao_problema text not null`, `km_entrada int?`, `km_saida int?`, `total_servicos/total_pecas/total_geral numeric(12,2) default 0` (denormalizados via trigger), `observacoes text?`, timestamps + soft delete, `fechado_em timestamptz?` (preenchido via trigger ao virar `entregue`). RLS: `os_authenticated_all`. Indexes parciais por status, cliente, veiculo, criado_em desc.
 - **`os_servicos`** — `id uuid`, `os_id uuid not null` → `ordens_servico(id) ON DELETE CASCADE`, `descricao text`, `valor_unitario numeric(12,2) check >= 0`, `quantidade numeric(8,2) check > 0`, `subtotal numeric(12,2) generated stored = valor_unitario * quantidade`, `ordem int default 0`, `criado_em`. RLS authenticated. Index `idx_os_servicos_os`.
-- **`os_pecas`** — `id uuid`, `os_id uuid not null cascade`, `descricao text`, `origem peca_origem default 'fornecedor'`, `custo_unitario / preco_venda_unitario numeric(12,2)`, `quantidade numeric(8,2) > 0`, `subtotal_venda numeric(12,2) generated stored`, `link_ml text?`, `fornecedor_nome text?` (FK estruturada vem na Sprint 2), `status peca_status default 'pendente'`, `ordem int`, `criado_em`. RLS authenticated. Indexes `idx_os_pecas_os`, `idx_os_pecas_status`.
+- **`os_pecas`** — `id uuid`, `os_id uuid not null cascade`, `descricao text`, `origem peca_origem default 'fornecedor'`, `custo_unitario / preco_venda_unitario numeric(12,2)`, `quantidade numeric(8,2) > 0`, `subtotal_venda numeric(12,2) generated stored`, `link_ml text?`, `fornecedor_nome text?` (FK estruturada vem na Sprint 2), `item_estoque_id uuid?` → `itens_estoque(id) ON DELETE SET NULL` (Sprint 3), `status peca_status default 'pendente'`, `ordem int`, `criado_em`. RLS authenticated. Indexes `idx_os_pecas_os`, `idx_os_pecas_status`, `idx_os_pecas_item_estoque` (parcial). Trigger `trg_os_pecas_estoque` baixa/estorna estoque quando `origem='estoque'` e `item_estoque_id` está presente (Sprint 3).
 - **`os_fotos`** — `id uuid`, `os_id uuid not null cascade`, `storage_path text` (referencia bucket `os-fotos`), `momento foto_momento`, `legenda text?`, `criado_em`. RLS authenticated. Index `idx_os_fotos_os`.
 - **`fornecedores`** — `id uuid`, `nome text not null`, `telefone/email/cnpj/endereco/observacoes text?`, timestamps + soft delete. RLS authenticated. Index parcial `idx_fornecedores_nome` (where deletado_em null).
 - **`pedidos_fornecedor`** — `id uuid`, `numero serial unique`, `fornecedor_id uuid not null` → `fornecedores(id) ON DELETE RESTRICT`, `os_id uuid?` → `ordens_servico(id) ON DELETE SET NULL`, `status pedido_fornecedor_status default 'cotacao'`, `valor_total numeric(12,2) default 0` (denormalizado via trigger), `data_compra/data_recebimento date?`, `observacoes text?`, timestamps. RLS authenticated. Indexes em status, os, fornecedor.
-- **`pedido_fornecedor_itens`** — `id uuid`, `pedido_id uuid not null cascade`, `descricao text not null`, `custo_unitario numeric(12,2) check >= 0`, `quantidade numeric(8,2) > 0`, `subtotal numeric(12,2) generated stored = custo_unitario * quantidade`, `os_peca_id uuid?` → `os_pecas(id) ON DELETE SET NULL`, `criado_em`. RLS authenticated. Trigger recalcula `pedidos_fornecedor.valor_total` em insert/update/delete.
+- **`pedido_fornecedor_itens`** — `id uuid`, `pedido_id uuid not null cascade`, `descricao text not null`, `custo_unitario numeric(12,2) check >= 0`, `quantidade numeric(8,2) > 0`, `subtotal numeric(12,2) generated stored = custo_unitario * quantidade`, `os_peca_id uuid?` → `os_pecas(id) ON DELETE SET NULL`, `item_estoque_id uuid?` → `itens_estoque(id) ON DELETE SET NULL` (Sprint 3, usado por `lancarPedidoNoEstoque`), `criado_em`. RLS authenticated. Trigger recalcula `pedidos_fornecedor.valor_total` em insert/update/delete. Index parcial `idx_pedido_itens_item_estoque`.
 - **`pagamentos`** — `id uuid`, `os_id uuid not null` → `ordens_servico(id) ON DELETE RESTRICT`, `ordem int default 1`, `valor numeric(12,2) > 0`, `metodo pagamento_metodo not null`, `status pagamento_status default 'pendente'`, `data_prevista date?`, `data_paga timestamptz?`, `observacoes text?`, timestamps. RLS authenticated. Indexes em os, status, data_prevista (parcial onde status=pendente). Trigger `trg_pagamentos_marca_data_paga` preenche/zera `data_paga` quando status entra/sai de 'pago'.
 - **`links_afiliado_enviados`** — `id uuid`, `cliente_id uuid not null` → `clientes(id) ON DELETE RESTRICT`, `os_id uuid?` → `ordens_servico(id) ON DELETE SET NULL`, `link text not null`, `descricao_peca text not null`, `preco_estimado/comissao_estimada/comissao_recebida numeric(12,2)?`, `status link_afiliado_status default 'enviado'`, `data_envio timestamptz default now()`, `data_compra/data_comissao timestamptz?`, `observacoes text?`. RLS authenticated. Indexes em cliente, status, os.
+- **`categorias_estoque`** (8 rows seed Sprint 3) — `id uuid`, `nome text not null unique`, `ordem int default 0`, `criado_em`. RLS `categorias_authenticated_all`. Seed: Óleo, Filtro, Pneu, Roda, Fluido, Lâmpada, Palheta, Outro.
+- **`itens_estoque`** — `id uuid`, `categoria_id uuid not null` → `categorias_estoque(id) ON DELETE RESTRICT`, `descricao text not null`, `sku text?`, `unidade text default 'un'`, `quantidade_atual numeric(12,3) default 0` (atualizada via RPC `aplicar_movimentacao_estoque`), `custo_medio numeric(12,2) default 0` (médio ponderado, recalculado nas entradas), `preco_venda numeric(12,2) default 0`, `alerta_minimo numeric(12,3) default 0`, `ativo bool default true`, `observacoes text?`, timestamps + soft delete. RLS `itens_authenticated_all`. Indexes parciais: `idx_itens_categoria`, `idx_itens_descricao`, `idx_itens_sku`. Trigger `trg_itens_estoque_atualizado_em`.
+- **`movimentacoes_estoque`** — `id uuid`, `item_id uuid not null` → `itens_estoque(id) ON DELETE RESTRICT`, `tipo movimentacao_tipo`, `quantidade numeric(12,3) > 0`, `custo_unitario numeric(12,2)?`, `os_id/os_peca_id/pedido_loja_id/pedido_fornecedor_id` FKs opcionais (`pedido_loja_id` ganha FK na Sprint 6), `ajuste_motivo text?`, `saldo_apos numeric(12,3)` (snapshot), `criado_em`. RLS `movimentacoes_authenticated_all`. Indexes em item, tipo, criado_em, os, pedido_fornecedor (parciais).
 
 ### Enums (Sprint 1)
 
@@ -36,6 +39,10 @@
 - `pagamento_status` — `pendente | pago | atrasado | cancelado`
 - `pedido_fornecedor_status` — `cotacao | comprado | recebido | cancelado`
 - `link_afiliado_status` — `enviado | cliente_comprou | comissao_recebida | cancelado`
+
+### Enums (Sprint 3)
+
+- `movimentacao_tipo` — `entrada | saida_os | saida_loja | ajuste`
 
 ### Funções / triggers (Sprint 1)
 
@@ -54,6 +61,15 @@
 
 - `view_contas_a_receber` — agrega por cliente (join `clientes → ordens_servico → pagamentos`): `parcelas_em_aberto`, `parcelas_atrasadas`, `total_em_aberto`, `total_atrasado`, `proxima_data`. `HAVING parcelas_em_aberto > 0`.
 - `view_capital_investido` — pedidos com `status in ('comprado','recebido')` cujo cliente ainda não pagou tudo (ou que não têm OS — compra estoque puro): traz `valor_total`, `fornecedor_nome`, `os_total`, `cliente_pagou`.
+
+### Funções / triggers (Sprint 3)
+
+- `aplicar_movimentacao_estoque(p_item_id, p_tipo, p_quantidade, p_custo_unitario?, p_os_id?, p_os_peca_id?, p_pedido_loja_id?, p_pedido_fornecedor_id?, p_ajuste_motivo?) returns uuid` — locks `itens_estoque` row, valida saldo (saída) ou exige `custo_unitario` (entrada) / `ajuste_motivo` (ajuste), recalcula `custo_medio` ponderado em entradas, atualiza `quantidade_atual`, insere movimentação com `saldo_apos`.
+- `trg_os_pecas_baixa_estoque()` + trigger `trg_os_pecas_estoque` (after insert/update/delete em `os_pecas`): baixa via `aplicar_movimentacao_estoque saida_os` em INSERT, estorna+rebaixa em UPDATE, estorna em DELETE. Só age quando `origem='estoque'` e `item_estoque_id` presente.
+
+### Views (Sprint 3)
+
+- `view_itens_abaixo_minimo` — `select * from itens_estoque where deletado_em is null and ativo=true and quantidade_atual <= alerta_minimo`. Usada pelo card do dashboard.
 
 ### Storage
 

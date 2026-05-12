@@ -8,14 +8,14 @@
 |---|--------|--------|-------------|---------------------|
 | 0 | Setup | ✅ validada | main | ✅ Romero (proxy) 2026-05-11 |
 | 1 | Core OS | ✅ validada | — | ✅ Romero (proxy) 2026-05-11 |
-| 2 | Financeiro | 🟢 implementada | `sprint-02-financeiro` | aguardando Pedro |
-| 3 | Estoque | ⚪ pendente | — | — |
+| 2 | Financeiro | ✅ validada | `sprint-02-financeiro` → main (PR #1) | ✅ Romero (proxy) 2026-05-11 |
+| 3 | Estoque | 🟢 implementada | `sprint-03-06` | aguardando Pedro |
 | 4 | Agenda | ⚪ pendente | — | — |
 | 5 | WhatsApp (Evolution API) | ⚪ pendente | — | — |
-| 6 | PedroRed Store (pública) | ⚪ pendente | — | — |
+| 6 | PedroRed Store (pública) | 🟡 em andamento | `sprint-03-06` | — |
 | 7 | IA + Dashboards | ⚪ pendente | — | — |
 
-**Sprint corrente: 2 — Financeiro (🟢 implementada, aguardando validação).** (Sprints 0 e 1 validadas por Romero em 2026-05-11; Pedro ainda não testou em produção.)
+**Sprint corrente: 3 + 6 (🟢/🟡 mescladas em `sprint-03-06`).** Sprint 3 implementada; Sprint 6 em desenvolvimento na mesma branch (decisão do Romero em 2026-05-11 — PR único no final). Sprints 0/1/2 validadas por Romero como proxy; Pedro testa todas em batch em produção.
 
 **Deploy de produção:** https://sistema-oficina-pedrored.vercel.app/ (Vercel, conectado a `armitagethird/sistema-oficina-pedrored` em GitHub).
 

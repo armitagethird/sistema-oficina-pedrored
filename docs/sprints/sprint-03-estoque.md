@@ -4,7 +4,7 @@
 
 ## Status
 
-⚪ Pendente.
+🟢 Implementada na branch `sprint-03-06` (em conjunto com Sprint 6 por decisão do Romero — PR único no final).
 
 ## Contexto
 
@@ -417,7 +417,25 @@ src/
 
 ## Progresso
 
-(atualize)
+**Fases entregues:**
+- ✅ 3A — Migration `20260615000000_init_estoque.sql` aplicada (categorias, itens, movimentações, RPC `aplicar_movimentacao_estoque`, trigger `trg_os_pecas_estoque`, view `view_itens_abaixo_minimo`)
+- ✅ 3B — `src/features/estoque/{types,schemas,queries,actions}.ts` + `schemas.test.ts` (19 testes verdes)
+- ✅ 3C — Páginas admin `/app/estoque/*` + componentes (ItemForm, ItemCard, listas mobile/desktop, MovimentacaoForm, MovimentacoesList, AlertaMinimoBadge)
+- ✅ 3D — CRUD categorias `/app/estoque/categorias`
+- ✅ 3E — `ItemCombobox` integrado em `os-pecas-itemized.tsx` (origem=estoque); trigger validado via testes de integração
+- ✅ 3F — Migration `20260615000001_alter_pedido_itens_estoque_fk.sql`; `ItemCombobox` no editor de itens do pedido; action `lancarPedidoNoEstoque` + botão na página detalhe
+- ✅ 3G — Dashboard ganha card "Estoque baixo" + atalho ativo
+- ✅ 3H — `e2e/sprint-03-estoque.spec.ts` (smoke, skipa sem `E2E_PEDRO_EMAIL/SENHA`); docs atualizados
+
+**Verificação automatizada (CI):**
+- [x] typecheck verde
+- [x] lint verde
+- [x] vitest schemas (19/19 passing)
+- [x] migrations aplicam em DB remoto
+
+**Verificação de integração SQL (`RUN_DB_INTEGRATION=1`):** testes prontos em `src/features/estoque/integration.test.ts` (6 da função + 4 do trigger). Rodar manualmente antes do merge.
+
+**Manual (Pedro):** pendente — Pedro vai testar em batch com sprint 6.
 
 ## Referências
 
