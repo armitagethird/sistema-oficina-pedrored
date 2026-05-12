@@ -39,6 +39,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      categorias_estoque: {
+        Row: {
+          criado_em: string
+          id: string
+          nome: string
+          ordem: number
+        }
+        Insert: {
+          criado_em?: string
+          id?: string
+          nome: string
+          ordem?: number
+        }
+        Update: {
+          criado_em?: string
+          id?: string
+          nome?: string
+          ordem?: number
+        }
+        Relationships: []
+      }
       clientes: {
         Row: {
           atualizado_em: string
@@ -117,6 +138,65 @@ export type Database = {
         }
         Relationships: []
       }
+      itens_estoque: {
+        Row: {
+          alerta_minimo: number
+          ativo: boolean
+          atualizado_em: string
+          categoria_id: string
+          criado_em: string
+          custo_medio: number
+          deletado_em: string | null
+          descricao: string
+          id: string
+          observacoes: string | null
+          preco_venda: number
+          quantidade_atual: number
+          sku: string | null
+          unidade: string
+        }
+        Insert: {
+          alerta_minimo?: number
+          ativo?: boolean
+          atualizado_em?: string
+          categoria_id: string
+          criado_em?: string
+          custo_medio?: number
+          deletado_em?: string | null
+          descricao: string
+          id?: string
+          observacoes?: string | null
+          preco_venda?: number
+          quantidade_atual?: number
+          sku?: string | null
+          unidade?: string
+        }
+        Update: {
+          alerta_minimo?: number
+          ativo?: boolean
+          atualizado_em?: string
+          categoria_id?: string
+          criado_em?: string
+          custo_medio?: number
+          deletado_em?: string | null
+          descricao?: string
+          id?: string
+          observacoes?: string | null
+          preco_venda?: number
+          quantidade_atual?: number
+          sku?: string | null
+          unidade?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "itens_estoque_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "categorias_estoque"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       links_afiliado_enviados: {
         Row: {
           cliente_id: string
@@ -191,6 +271,101 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "view_capital_investido"
             referencedColumns: ["os_id"]
+          },
+        ]
+      }
+      movimentacoes_estoque: {
+        Row: {
+          ajuste_motivo: string | null
+          criado_em: string
+          custo_unitario: number | null
+          id: string
+          item_id: string
+          os_id: string | null
+          os_peca_id: string | null
+          pedido_fornecedor_id: string | null
+          pedido_loja_id: string | null
+          quantidade: number
+          saldo_apos: number
+          tipo: Database["public"]["Enums"]["movimentacao_tipo"]
+        }
+        Insert: {
+          ajuste_motivo?: string | null
+          criado_em?: string
+          custo_unitario?: number | null
+          id?: string
+          item_id: string
+          os_id?: string | null
+          os_peca_id?: string | null
+          pedido_fornecedor_id?: string | null
+          pedido_loja_id?: string | null
+          quantidade: number
+          saldo_apos: number
+          tipo: Database["public"]["Enums"]["movimentacao_tipo"]
+        }
+        Update: {
+          ajuste_motivo?: string | null
+          criado_em?: string
+          custo_unitario?: number | null
+          id?: string
+          item_id?: string
+          os_id?: string | null
+          os_peca_id?: string | null
+          pedido_fornecedor_id?: string | null
+          pedido_loja_id?: string | null
+          quantidade?: number
+          saldo_apos?: number
+          tipo?: Database["public"]["Enums"]["movimentacao_tipo"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "movimentacoes_estoque_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "itens_estoque"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "movimentacoes_estoque_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "view_itens_abaixo_minimo"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "movimentacoes_estoque_os_id_fkey"
+            columns: ["os_id"]
+            isOneToOne: false
+            referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "movimentacoes_estoque_os_id_fkey"
+            columns: ["os_id"]
+            isOneToOne: false
+            referencedRelation: "view_capital_investido"
+            referencedColumns: ["os_id"]
+          },
+          {
+            foreignKeyName: "movimentacoes_estoque_os_peca_id_fkey"
+            columns: ["os_peca_id"]
+            isOneToOne: false
+            referencedRelation: "os_pecas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "movimentacoes_estoque_pedido_fornecedor_id_fkey"
+            columns: ["pedido_fornecedor_id"]
+            isOneToOne: false
+            referencedRelation: "pedidos_fornecedor"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "movimentacoes_estoque_pedido_fornecedor_id_fkey"
+            columns: ["pedido_fornecedor_id"]
+            isOneToOne: false
+            referencedRelation: "view_capital_investido"
+            referencedColumns: ["pedido_id"]
           },
         ]
       }
@@ -322,6 +497,7 @@ export type Database = {
           descricao: string
           fornecedor_nome: string | null
           id: string
+          item_estoque_id: string | null
           link_ml: string | null
           ordem: number
           origem: Database["public"]["Enums"]["peca_origem"]
@@ -337,6 +513,7 @@ export type Database = {
           descricao: string
           fornecedor_nome?: string | null
           id?: string
+          item_estoque_id?: string | null
           link_ml?: string | null
           ordem?: number
           origem?: Database["public"]["Enums"]["peca_origem"]
@@ -352,6 +529,7 @@ export type Database = {
           descricao?: string
           fornecedor_nome?: string | null
           id?: string
+          item_estoque_id?: string | null
           link_ml?: string | null
           ordem?: number
           origem?: Database["public"]["Enums"]["peca_origem"]
@@ -362,6 +540,20 @@ export type Database = {
           subtotal_venda?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "os_pecas_item_estoque_id_fkey"
+            columns: ["item_estoque_id"]
+            isOneToOne: false
+            referencedRelation: "itens_estoque"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "os_pecas_item_estoque_id_fkey"
+            columns: ["item_estoque_id"]
+            isOneToOne: false
+            referencedRelation: "view_itens_abaixo_minimo"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "os_pecas_os_id_fkey"
             columns: ["os_id"]
@@ -732,8 +924,81 @@ export type Database = {
         }
         Relationships: []
       }
+      view_itens_abaixo_minimo: {
+        Row: {
+          alerta_minimo: number | null
+          ativo: boolean | null
+          atualizado_em: string | null
+          categoria_id: string | null
+          criado_em: string | null
+          custo_medio: number | null
+          deletado_em: string | null
+          descricao: string | null
+          id: string | null
+          observacoes: string | null
+          preco_venda: number | null
+          quantidade_atual: number | null
+          sku: string | null
+          unidade: string | null
+        }
+        Insert: {
+          alerta_minimo?: number | null
+          ativo?: boolean | null
+          atualizado_em?: string | null
+          categoria_id?: string | null
+          criado_em?: string | null
+          custo_medio?: number | null
+          deletado_em?: string | null
+          descricao?: string | null
+          id?: string | null
+          observacoes?: string | null
+          preco_venda?: number | null
+          quantidade_atual?: number | null
+          sku?: string | null
+          unidade?: string | null
+        }
+        Update: {
+          alerta_minimo?: number | null
+          ativo?: boolean | null
+          atualizado_em?: string | null
+          categoria_id?: string | null
+          criado_em?: string | null
+          custo_medio?: number | null
+          deletado_em?: string | null
+          descricao?: string | null
+          id?: string | null
+          observacoes?: string | null
+          preco_venda?: number | null
+          quantidade_atual?: number | null
+          sku?: string | null
+          unidade?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "itens_estoque_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "categorias_estoque"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
+      aplicar_movimentacao_estoque: {
+        Args: {
+          p_ajuste_motivo?: string
+          p_custo_unitario?: number
+          p_item_id: string
+          p_os_id?: string
+          p_os_peca_id?: string
+          p_pedido_fornecedor_id?: string
+          p_pedido_loja_id?: string
+          p_quantidade: number
+          p_tipo: Database["public"]["Enums"]["movimentacao_tipo"]
+        }
+        Returns: string
+      }
       marca_pagamentos_atrasados: { Args: never; Returns: number }
       recalcula_totais_os: { Args: { p_os_id: string }; Returns: undefined }
       recalcula_total_pedido_fornecedor: {
@@ -748,6 +1013,7 @@ export type Database = {
         | "cliente_comprou"
         | "comissao_recebida"
         | "cancelado"
+      movimentacao_tipo: "entrada" | "saida_os" | "saida_loja" | "ajuste"
       os_status:
         | "aberta"
         | "em_andamento"
@@ -901,6 +1167,7 @@ export const Constants = {
         "comissao_recebida",
         "cancelado",
       ],
+      movimentacao_tipo: ["entrada", "saida_os", "saida_loja", "ajuste"],
       os_status: [
         "aberta",
         "em_andamento",
