@@ -41,6 +41,7 @@ WHATSAPP_WEBHOOK_SECRET=xxx   # opcional, valida header `apikey` no webhook /api
 PIX_CHAVE=xxx
 PIX_NOME_BENEFICIARIO=Pedro Silva
 PIX_CIDADE=Cidade
+YT_CHANNEL_ID=UCwLMc5ERhoaghTLQ0aH7buA   # canal @PEDROredtsi — RSS de 3 vídeos mais recentes na home
 
 # Sprint 7+
 GEMINI_API_KEY=xxx

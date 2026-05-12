@@ -2,16 +2,22 @@ import Link from "next/link";
 import { ArrowRightIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { CanalYouTube } from "@/features/loja/components/publico/canal-youtube";
 import { Hero } from "@/features/loja/components/publico/hero";
 import { ProdutoGrid } from "@/features/loja/components/publico/produto-grid";
+import { CONTATO } from "@/features/loja/contato";
 import {
   listProdutosDestaque,
   listProdutosPublicos,
 } from "@/features/loja/queries";
+import { getUltimosVideos } from "@/features/loja/youtube";
 
 export default async function HomePage() {
-  const destaques = await listProdutosDestaque(8);
-  const recentes = await listProdutosPublicos({ pagina: 1, porPagina: 8 });
+  const [destaques, recentes, videos] = await Promise.all([
+    listProdutosDestaque(8),
+    listProdutosPublicos({ pagina: 1, porPagina: 8 }),
+    getUltimosVideos(CONTATO.youtube.channelId, 3),
+  ]);
 
   return (
     <div>
@@ -33,6 +39,8 @@ export default async function HomePage() {
           </section>
         ) : null}
 
+        <CanalYouTube videos={videos} />
+
         {recentes.items.length > 0 ? (
           <section className="flex flex-col gap-4">
             <header className="flex items-end justify-between gap-2">
@@ -51,7 +59,7 @@ export default async function HomePage() {
           <p className="rounded-md border bg-card p-6 text-center text-muted-foreground">
             Pedro está organizando o catálogo. Volte em breve ou{" "}
             <a
-              href="https://wa.me/55"
+              href={CONTATO.whatsapp.href}
               className="underline"
               target="_blank"
               rel="noreferrer"
