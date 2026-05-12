@@ -945,6 +945,7 @@ export type Database = {
           preco: number
           preco_promocional: number | null
           slug: string
+          somente_sob_encomenda: boolean
           status: Database["public"]["Enums"]["produto_status"]
           titulo: string
         }
@@ -963,6 +964,7 @@ export type Database = {
           preco: number
           preco_promocional?: number | null
           slug: string
+          somente_sob_encomenda?: boolean
           status?: Database["public"]["Enums"]["produto_status"]
           titulo: string
         }
@@ -981,6 +983,7 @@ export type Database = {
           preco?: number
           preco_promocional?: number | null
           slug?: string
+          somente_sob_encomenda?: boolean
           status?: Database["public"]["Enums"]["produto_status"]
           titulo?: string
         }
