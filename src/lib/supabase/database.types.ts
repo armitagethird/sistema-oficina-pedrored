@@ -1141,9 +1141,12 @@ export type Database = {
           cliente_id: string
           cor: string | null
           criado_em: string
+          data_ultima_troca_oleo: string | null
           deletado_em: string | null
           id: string
           km_atual: number | null
+          km_proxima_troca_oleo: number | null
+          km_ultima_troca_oleo: number | null
           modelo_custom: string | null
           modelo_id: string | null
           motor: string | null
@@ -1156,9 +1159,12 @@ export type Database = {
           cliente_id: string
           cor?: string | null
           criado_em?: string
+          data_ultima_troca_oleo?: string | null
           deletado_em?: string | null
           id?: string
           km_atual?: number | null
+          km_proxima_troca_oleo?: number | null
+          km_ultima_troca_oleo?: number | null
           modelo_custom?: string | null
           modelo_id?: string | null
           motor?: string | null
@@ -1171,9 +1177,12 @@ export type Database = {
           cliente_id?: string
           cor?: string | null
           criado_em?: string
+          data_ultima_troca_oleo?: string | null
           deletado_em?: string | null
           id?: string
           km_atual?: number | null
+          km_proxima_troca_oleo?: number | null
+          km_ultima_troca_oleo?: number | null
           modelo_custom?: string | null
           modelo_id?: string | null
           motor?: string | null
@@ -1234,6 +1243,201 @@ export type Database = {
         }
         Relationships: []
       }
+      // ===== Sprint 5 (WhatsApp) — adicionados manualmente; serão regenerados por `pnpm db:gen` após migration aplicada. =====
+      whatsapp_templates: {
+        Row: {
+          tipo:
+            | "lembrete_d1"
+            | "os_pronta"
+            | "cobranca_atraso_3"
+            | "cobranca_atraso_7"
+            | "cobranca_atraso_15"
+            | "lembrete_oleo_km"
+            | "manual"
+          template_texto: string
+          ativo: boolean
+          descricao: string | null
+          atualizado_em: string
+        }
+        Insert: {
+          tipo:
+            | "lembrete_d1"
+            | "os_pronta"
+            | "cobranca_atraso_3"
+            | "cobranca_atraso_7"
+            | "cobranca_atraso_15"
+            | "lembrete_oleo_km"
+            | "manual"
+          template_texto: string
+          ativo?: boolean
+          descricao?: string | null
+          atualizado_em?: string
+        }
+        Update: {
+          tipo?:
+            | "lembrete_d1"
+            | "os_pronta"
+            | "cobranca_atraso_3"
+            | "cobranca_atraso_7"
+            | "cobranca_atraso_15"
+            | "lembrete_oleo_km"
+            | "manual"
+          template_texto?: string
+          ativo?: boolean
+          descricao?: string | null
+          atualizado_em?: string
+        }
+        Relationships: []
+      }
+      whatsapp_msgs: {
+        Row: {
+          id: string
+          cliente_id: string | null
+          telefone: string
+          direcao: "in" | "out"
+          template_tipo:
+            | "lembrete_d1"
+            | "os_pronta"
+            | "cobranca_atraso_3"
+            | "cobranca_atraso_7"
+            | "cobranca_atraso_15"
+            | "lembrete_oleo_km"
+            | "manual"
+            | null
+          conteudo: string
+          status: "pendente" | "enviada" | "entregue" | "lida" | "falhou"
+          evolution_msg_id: string | null
+          os_id: string | null
+          agendamento_id: string | null
+          pagamento_id: string | null
+          payload_raw: Json | null
+          erro: string | null
+          criado_em: string
+          atualizado_em: string
+        }
+        Insert: {
+          id?: string
+          cliente_id?: string | null
+          telefone: string
+          direcao: "in" | "out"
+          template_tipo?:
+            | "lembrete_d1"
+            | "os_pronta"
+            | "cobranca_atraso_3"
+            | "cobranca_atraso_7"
+            | "cobranca_atraso_15"
+            | "lembrete_oleo_km"
+            | "manual"
+            | null
+          conteudo: string
+          status?: "pendente" | "enviada" | "entregue" | "lida" | "falhou"
+          evolution_msg_id?: string | null
+          os_id?: string | null
+          agendamento_id?: string | null
+          pagamento_id?: string | null
+          payload_raw?: Json | null
+          erro?: string | null
+          criado_em?: string
+          atualizado_em?: string
+        }
+        Update: {
+          id?: string
+          cliente_id?: string | null
+          telefone?: string
+          direcao?: "in" | "out"
+          template_tipo?:
+            | "lembrete_d1"
+            | "os_pronta"
+            | "cobranca_atraso_3"
+            | "cobranca_atraso_7"
+            | "cobranca_atraso_15"
+            | "lembrete_oleo_km"
+            | "manual"
+            | null
+          conteudo?: string
+          status?: "pendente" | "enviada" | "entregue" | "lida" | "falhou"
+          evolution_msg_id?: string | null
+          os_id?: string | null
+          agendamento_id?: string | null
+          pagamento_id?: string | null
+          payload_raw?: Json | null
+          erro?: string | null
+          criado_em?: string
+          atualizado_em?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_msgs_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "whatsapp_msgs_os_id_fkey"
+            columns: ["os_id"]
+            isOneToOne: false
+            referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "whatsapp_msgs_agendamento_id_fkey"
+            columns: ["agendamento_id"]
+            isOneToOne: false
+            referencedRelation: "agendamentos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "whatsapp_msgs_pagamento_id_fkey"
+            columns: ["pagamento_id"]
+            isOneToOne: false
+            referencedRelation: "pagamentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      whatsapp_jobs_cron: {
+        Row: {
+          id: string
+          tipo: "lembrete_d1" | "cobranca_atraso" | "lembrete_oleo_km"
+          alvo_id: string
+          marco: string
+          msg_id: string | null
+          sucesso: boolean
+          erro: string | null
+          criado_em: string
+        }
+        Insert: {
+          id?: string
+          tipo: "lembrete_d1" | "cobranca_atraso" | "lembrete_oleo_km"
+          alvo_id: string
+          marco: string
+          msg_id?: string | null
+          sucesso: boolean
+          erro?: string | null
+          criado_em?: string
+        }
+        Update: {
+          id?: string
+          tipo?: "lembrete_d1" | "cobranca_atraso" | "lembrete_oleo_km"
+          alvo_id?: string
+          marco?: string
+          msg_id?: string | null
+          sucesso?: boolean
+          erro?: string | null
+          criado_em?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_jobs_cron_msg_id_fkey"
+            columns: ["msg_id"]
+            isOneToOne: false
+            referencedRelation: "whatsapp_msgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      // ===== fim adições Sprint 5 =====
     }
     Views: {
       view_capital_investido: {
