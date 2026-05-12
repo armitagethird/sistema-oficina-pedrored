@@ -201,11 +201,11 @@ export default async function DashboardPage() {
                   Estoque
                 </Link>
               </Button>
-              <Button asChild variant="outline" className="justify-start" disabled>
-                <span>
+              <Button asChild variant="outline" className="justify-start">
+                <Link href="/app/agenda">
                   <ClockIcon className="mr-2 size-4" />
-                  Agenda (Sprint 4)
-                </span>
+                  Agenda
+                </Link>
               </Button>
             </CardContent>
           </Card>
