@@ -10,7 +10,7 @@
 | 1 | Core OS | ✅ validada | — | ✅ Romero (proxy) 2026-05-11 |
 | 2 | Financeiro | ✅ validada | `sprint-02-financeiro` → main (PR #1) | ✅ Romero (proxy) 2026-05-11 |
 | 3 | Estoque | 🟢 implementada | `sprint-03-06` | aguardando Pedro |
-| 4 | Agenda | ⚪ pendente | — | — |
+| 4 | Agenda | 🟢 implementada | `sprint-04-agenda` | aguardando Pedro |
 | 5 | WhatsApp (Evolution API) | ⚪ pendente | — | — |
 | 6 | PedroRed Store (pública) | 🟢 implementada | `sprint-03-06` | aguardando Pedro |
 | 7 | IA + Dashboards | ⚪ pendente | — | — |

@@ -4,7 +4,22 @@
 
 ## Status
 
-⚪ Pendente.
+🟢 **Implementada em 2026-05-12** — branch `sprint-04-agenda`, aguardando validação de Pedro no celular antes do merge em main.
+
+### Progresso
+
+- [x] Migrations `20260701000000_init_agenda.sql` + `20260701000001_alter_os_agendamento_fk.sql` aplicadas
+- [x] Tipos DB regenerados (`pnpm db:gen`)
+- [x] `src/features/agenda/constants.ts` + `types.ts` (state machine + labels)
+- [x] `src/features/agenda/schemas.ts` com TDD (11 testes passando)
+- [x] `src/features/agenda/queries.ts` (hoje/semana/mês/detalhe/ocupação/settings)
+- [x] `src/features/agenda/actions.ts` (CRUD + mudarStatus + criarOSFromAgendamento + settings)
+- [x] Componentes UI: AgendaStatusBadge, OcupacaoIndicator, AgendamentoCard, MudarStatusAgendamento, PeriodoCard, AgendaHoje, AgendaSemana, AgendaMesCalendario, AgendamentoForm, CapacidadeConfig
+- [x] 7 páginas: `/app/agenda`, `/app/agenda/semana`, `/app/agenda/mes`, `/app/agenda/novo`, `/app/agenda/[id]`, `/app/agenda/[id]/editar`, `/app/agenda/configuracoes`
+- [x] Dashboard: link Agenda ativado
+- [x] OS detalhe: mostra agendamento de origem quando vinculado
+- [x] `pnpm typecheck` ✅ `pnpm lint` ✅ `pnpm test` ✅ `pnpm build` ✅
+- [x] E2E smoke tests em `tests/e2e/agenda.spec.ts`
 
 ## Contexto
 
