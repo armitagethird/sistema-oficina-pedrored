@@ -24,7 +24,7 @@ export const produtoCreateSchema = z.object({
   frete_info: z.string().max(200).optional().nullable(),
   status: z
     .enum(PRODUTO_STATUS_VALUES as readonly [string, ...string[]])
-    .default("ativo"),
+    .optional(),
   destaque: z.boolean().optional(),
   ordem_destaque: z.number().int().optional().nullable(),
   item_estoque_id: z.string().uuid().optional().nullable(),

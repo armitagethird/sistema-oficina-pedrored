@@ -73,7 +73,7 @@ export async function createProduto(
       preco_promocional: parsed.data.preco_promocional ?? null,
       estoque_manual: parsed.data.estoque_manual ?? null,
       frete_info: emptyToNull(parsed.data.frete_info ?? null),
-      status: parsed.data.status as ProdutoStatus,
+      status: (parsed.data.status ?? "ativo") as ProdutoStatus,
       destaque: parsed.data.destaque ?? false,
       ordem_destaque: parsed.data.ordem_destaque ?? 0,
       item_estoque_id: parsed.data.item_estoque_id ?? null,
