@@ -10,6 +10,16 @@ export type ProdutoInsert = TablesInsert<"produtos_loja">;
 export type ProdutoUpdate = TablesUpdate<"produtos_loja">;
 export type ProdutoStatus = Database["public"]["Enums"]["produto_status"];
 
+/**
+ * Produto enriquecido com saldo do item de estoque vinculado (quando houver).
+ * `quantidade_estoque` é null quando o produto não está vinculado.
+ */
+export type ProdutoComEstoque = Produto & {
+  quantidade_estoque: number | null;
+};
+
+export const SALDO_BAIXO_THRESHOLD = 3;
+
 export type PedidoLoja = Tables<"pedidos_loja">;
 export type PedidoLojaInsert = TablesInsert<"pedidos_loja">;
 export type PedidoLojaUpdate = TablesUpdate<"pedidos_loja">;

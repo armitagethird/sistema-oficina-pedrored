@@ -31,7 +31,7 @@ export async function criarPedido(
   const { data: produtos, error: pErr } = await supabase
     .from("produtos_loja")
     .select(
-      "id, titulo, preco, preco_promocional, status, item_estoque_id, estoque_manual",
+      "id, titulo, preco, preco_promocional, status, item_estoque_id, estoque_manual, somente_sob_encomenda",
     )
     .in("id", produtoIds);
   if (pErr || !produtos || produtos.length !== produtoIds.length) {
@@ -41,6 +41,37 @@ export async function criarPedido(
   for (const p of produtos) {
     if (p.status !== "ativo") {
       return { ok: false, error: `Produto "${p.titulo}" indisponível` };
+    }
+  }
+
+  // Valida saldo de estoque para produtos vinculados que NÃO sejam sob encomenda.
+  const itensComVinculo = produtos.filter(
+    (p) => !p.somente_sob_encomenda && p.item_estoque_id,
+  );
+  if (itensComVinculo.length > 0) {
+    const { data: saldos, error: sErr } = await supabase
+      .from("itens_estoque")
+      .select("id, quantidade_atual")
+      .in(
+        "id",
+        itensComVinculo.map((p) => p.item_estoque_id!),
+      );
+    if (sErr) {
+      console.error("criarPedido saldos:", sErr);
+      return { ok: false, error: "Falha ao verificar estoque" };
+    }
+    const saldoPorItem = new Map(
+      (saldos ?? []).map((s) => [s.id, Number(s.quantidade_atual)]),
+    );
+    for (const p of itensComVinculo) {
+      const pedido = parsed.data.itens.find((i) => i.produto_id === p.id)!;
+      const disponivel = saldoPorItem.get(p.item_estoque_id!) ?? 0;
+      if (disponivel < pedido.quantidade) {
+        return {
+          ok: false,
+          error: `Estoque insuficiente para "${p.titulo}" (disponível: ${disponivel})`,
+        };
+      }
     }
   }
 

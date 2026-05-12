@@ -7,10 +7,29 @@ import type {
   PedidoLoja,
   PedidoLojaStatus,
   Produto,
+  ProdutoComEstoque,
   ProdutoStatus,
 } from "./types";
 
-export type ProdutoListItem = Produto;
+export type ProdutoListItem = ProdutoComEstoque;
+
+const PRODUTO_PUBLICO_SELECT =
+  "*, item_estoque:itens_estoque(quantidade_atual)";
+
+type ProdutoComItemEstoqueRow = Produto & {
+  item_estoque: { quantidade_atual: number } | null;
+};
+
+function mapProdutoComEstoque(row: ProdutoComItemEstoqueRow): ProdutoComEstoque {
+  const { item_estoque, ...produto } = row;
+  return {
+    ...produto,
+    quantidade_estoque:
+      item_estoque?.quantidade_atual != null
+        ? Number(item_estoque.quantidade_atual)
+        : null,
+  };
+}
 
 export type ListProdutosOptions = {
   pagina?: number;
@@ -34,7 +53,7 @@ export async function listProdutosPublicos(
 
   let q = supabase
     .from("produtos_loja")
-    .select("*", { count: "exact" })
+    .select(PRODUTO_PUBLICO_SELECT, { count: "exact" })
     .eq("status", "ativo")
     .order("criado_em", { ascending: false })
     .range((pagina - 1) * porPagina, pagina * porPagina - 1);
@@ -47,37 +66,45 @@ export async function listProdutosPublicos(
   const { data, count, error } = await q;
   if (error) throw new Error(`Erro ao listar produtos: ${error.message}`);
   const total = count ?? 0;
+  const rows = (data ?? []) as unknown as ProdutoComItemEstoqueRow[];
   return {
-    items: data ?? [],
+    items: rows.map(mapProdutoComEstoque),
     total,
     pagina,
     paginas: Math.max(1, Math.ceil(total / porPagina)),
   };
 }
 
-export async function listProdutosDestaque(limit = 8): Promise<Produto[]> {
+export async function listProdutosDestaque(
+  limit = 8,
+): Promise<ProdutoComEstoque[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("produtos_loja")
-    .select("*")
+    .select(PRODUTO_PUBLICO_SELECT)
     .eq("status", "ativo")
     .eq("destaque", true)
     .order("ordem_destaque", { ascending: true })
     .limit(limit);
   if (error) throw new Error(`Erro ao listar destaques: ${error.message}`);
-  return data ?? [];
+  return ((data ?? []) as unknown as ProdutoComItemEstoqueRow[]).map(
+    mapProdutoComEstoque,
+  );
 }
 
-export async function getProdutoBySlug(slug: string): Promise<Produto | null> {
+export async function getProdutoBySlug(
+  slug: string,
+): Promise<ProdutoComEstoque | null> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("produtos_loja")
-    .select("*")
+    .select(PRODUTO_PUBLICO_SELECT)
     .eq("slug", slug)
     .eq("status", "ativo")
     .maybeSingle();
   if (error) throw new Error(`Erro ao buscar produto: ${error.message}`);
-  return data;
+  if (!data) return null;
+  return mapProdutoComEstoque(data as unknown as ProdutoComItemEstoqueRow);
 }
 
 export async function listProdutosAdmin(opts: {

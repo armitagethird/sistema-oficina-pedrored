@@ -15,7 +15,7 @@ export const enderecoSchema = z.object({
   complemento: z.string().max(120).optional().nullable(),
 });
 
-export const produtoCreateSchema = z.object({
+const produtoBaseSchema = z.object({
   titulo: z.string().trim().min(2, "Título obrigatório").max(160),
   descricao: z.string().max(2000).optional().nullable(),
   preco: z.number().nonnegative("Preço inválido"),
@@ -28,10 +28,28 @@ export const produtoCreateSchema = z.object({
   destaque: z.boolean().optional(),
   ordem_destaque: z.number().int().optional().nullable(),
   item_estoque_id: z.string().uuid().optional().nullable(),
+  somente_sob_encomenda: z.boolean().optional(),
   fotos: z.array(z.string()).optional(),
 });
 
-export const produtoEditSchema = produtoCreateSchema.partial();
+const sobEncomendaSemEstoque = (data: {
+  somente_sob_encomenda?: boolean;
+  item_estoque_id?: string | null;
+}) => !(data.somente_sob_encomenda && data.item_estoque_id);
+
+const sobEncomendaIssue = {
+  message: "Produto sob encomenda não pode estar vinculado a item de estoque",
+  path: ["somente_sob_encomenda"],
+};
+
+export const produtoCreateSchema = produtoBaseSchema.refine(
+  sobEncomendaSemEstoque,
+  sobEncomendaIssue,
+);
+
+export const produtoEditSchema = produtoBaseSchema
+  .partial()
+  .refine(sobEncomendaSemEstoque, sobEncomendaIssue);
 
 export const itemPedidoSchema = z.object({
   produto_id: z.string().uuid("Produto inválido"),
