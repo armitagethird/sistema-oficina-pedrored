@@ -1,0 +1,10 @@
+wa.pedrored.com.br {
+    reverse_proxy evolution-api:8080
+
+    # Headers de proxy: garante que Evolution veja Host original.
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "no-referrer-when-downgrade"
+    }
+}

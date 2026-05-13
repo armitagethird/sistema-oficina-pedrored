@@ -35,11 +35,13 @@ CRON_SECRET=<gerar com: openssl rand -hex 32>
 EVOLUTION_API_URL=https://wa.pedrored.com.br
 EVOLUTION_API_KEY=xxx
 EVOLUTION_INSTANCE_NAME=pedrored
+WHATSAPP_WEBHOOK_SECRET=xxx   # opcional, valida header `apikey` no webhook /api/whatsapp/webhook
 
 # Sprint 6+
 PIX_CHAVE=xxx
 PIX_NOME_BENEFICIARIO=Pedro Silva
 PIX_CIDADE=Cidade
+YT_CHANNEL_ID=UCwLMc5ERhoaghTLQ0aH7buA   # canal @PEDROredtsi — RSS de 3 vídeos mais recentes na home
 
 # Sprint 7+
 GEMINI_API_KEY=xxx
@@ -58,22 +60,27 @@ ANALYTICS_PROVIDER=gemini
 
 **Atenção:** Vercel cron schedules são sempre em UTC. Para 09:00 BRT (UTC-3, sem horário de verão desde 2019) use `0 12 * * *`. Cada job futuro repete o cálculo.
 
-Estado atual de `vercel.json`:
+Estado atual de `vercel.json` (após Sprint 5):
 
 ```json
 {
   "crons": [
-    { "path": "/api/cron/financeiro/marca-atrasados", "schedule": "0 12 * * *" }
+    { "path": "/api/cron/financeiro/marca-atrasados", "schedule": "0 12 * * *" },
+    { "path": "/api/cron/whatsapp/lembrete-d1",       "schedule": "0 21 * * *" },
+    { "path": "/api/cron/whatsapp/cobranca-atraso",   "schedule": "0 13 * * *" },
+    { "path": "/api/cron/whatsapp/lembrete-oleo-km",  "schedule": "0 14 * * 1" }
   ]
 }
 ```
 
-Crons futuros que vão entrar conforme as sprints (referência, ainda não criados):
+Mapeamento UTC → BRT:
+- `0 12 * * *` → 09:00 BRT diário (marca atrasos)
+- `0 21 * * *` → 18:00 BRT diário (lembrete D-1)
+- `0 13 * * *` → 10:00 BRT diário (cobrança atraso)
+- `0 14 * * 1` → 11:00 BRT segunda (lembrete óleo)
 
+Crons futuros (Sprint 7):
 ```json
-{ "path": "/api/cron/whatsapp/lembrete-d1", "schedule": "0 21 * * *" }
-{ "path": "/api/cron/whatsapp/cobranca-atraso", "schedule": "0 13 * * *" }
-{ "path": "/api/cron/whatsapp/lembrete-oleo-km", "schedule": "0 14 * * 1" }
 { "path": "/api/cron/analytics/refresh-mvs", "schedule": "0 6 * * *" }
 ```
 
@@ -104,26 +111,39 @@ Free tier Supabase = backup diário automático mantido por 7 dias. Para períod
 
 ### Pré-requisitos
 
-- VPS Linux (Ubuntu 22.04 sugerido) com Docker + Docker Compose instalados.
-- Subdomínio apontando para o IP da VPS: `wa.pedrored.com.br`.
-- Certificado SSL via Let's Encrypt (Caddy ou nginx + certbot).
+- VPS Linux (Ubuntu 22.04 sugerido) com Docker + Docker Compose v2 instalados.
+- Subdomínio `wa.pedrored.com.br` apontando (registro A) para o IP da VPS.
+- Portas 80/443 liberadas (Caddy emite certificado Let's Encrypt automático).
+- Chip WhatsApp dedicado (número exclusivo da oficina; Evolution toma controle).
 
-### docker-compose.yml
+### Stack docker-compose
 
-Será criado em `infra/evolution/docker-compose.yml` no Sprint 5. Stack:
-
-- `evolution-api` — bridge WhatsApp (imagem oficial `atendai/evolution-api:latest`).
-- `postgres` — banco da Evolution (separado do Supabase — armazena estado de sessões WhatsApp).
-- `redis` — cache de mensagens.
+Arquivos em `infra/evolution/`:
+- `docker-compose.yml` — 4 serviços (`evolution-api`, `postgres`, `redis`, `caddy`).
+- `caddy/Caddyfile` — reverse proxy + HTTPS automático para `wa.pedrored.com.br`.
+- `.env.example` — variáveis necessárias (`EVOLUTION_API_KEY`, `POSTGRES_PASSWORD`,
+  `WEBHOOK_GLOBAL_URL`).
+- `RUNBOOK.md` — passo-a-passo de bootstrap, pareamento, restart, recuperação.
 
 ### Webhook → Vercel
 
-Configurar Evolution para apontar webhooks de mensagens recebidas para:
+Evolution chama:
 ```
-POST https://pedrored.vercel.app/api/whatsapp/webhook
+POST https://sistema-oficina-pedrored.vercel.app/api/whatsapp/webhook
 ```
 
-Vercel recebe, valida assinatura (`X-Evolution-Signature` HMAC), processa e responde 200.
+A rota:
+1. Valida header `apikey` ou `Authorization: Bearer ...` quando
+   `WHATSAPP_WEBHOOK_SECRET` está setado (recomendado em produção).
+2. Trata `MESSAGES_UPSERT` (insere `whatsapp_msgs` direcao=in vinculando cliente
+   por telefone) e `MESSAGES_UPDATE`/`SEND_MESSAGE` (atualiza status via mapa
+   PENDING/SERVER_ACK/DELIVERY_ACK/READ/ERROR → `whatsapp_msg_status`).
+
+### Kill-switch global
+
+`/app/whatsapp/configuracoes` controla o toggle `whatsapp_envios_ativos` na
+tabela `settings`. Quando off, todos os crons e envios manuais ficam bloqueados
+(o webhook continua aceitando inbound). Útil em incidentes.
 
 ### Custos VPS
 
@@ -144,6 +164,6 @@ Cenários previstos:
 |---------|-------------|
 | Vercel cai | Aceitar downtime (free tier). Migrar pra Cloudflare Pages se virar problema recorrente. |
 | Supabase cai | Aceitar downtime. Backup diário disponível para restore se houver corrupção. |
-| VPS Hostgator cai (Sprint 5+) | WhatsApp para de funcionar — admin segue rodando. Reiniciar Docker via SSH. Documentar runbook em `infra/evolution/RUNBOOK.md` quando criar VPS. |
+| VPS Hostgator cai (Sprint 5+) | WhatsApp para de funcionar — admin segue rodando. Reiniciar Docker via SSH (`docker compose restart` na VPS). Runbook completo em `infra/evolution/RUNBOOK.md`. |
 | Pedro perde celular | Faz logout via Supabase dashboard, faz reset de senha por email, loga novo dispositivo. |
 | Esquecimento de chave PIX no `.env` | Loja mostra "configurando, fale via WhatsApp" e segue funcionando. Não derruba o app. |

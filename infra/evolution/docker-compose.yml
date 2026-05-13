@@ -1,0 +1,68 @@
+services:
+  evolution-api:
+    image: atendai/evolution-api:latest
+    container_name: evolution-api
+    restart: unless-stopped
+    environment:
+      SERVER_URL: https://wa.pedrored.com.br
+      AUTHENTICATION_API_KEY: ${EVOLUTION_API_KEY}
+      DATABASE_ENABLED: "true"
+      DATABASE_PROVIDER: postgresql
+      DATABASE_CONNECTION_URI: postgres://evo:${POSTGRES_PASSWORD}@postgres:5432/evolution
+      CACHE_REDIS_ENABLED: "true"
+      CACHE_REDIS_URI: redis://redis:6379
+      WEBHOOK_GLOBAL_ENABLED: "true"
+      WEBHOOK_GLOBAL_URL: ${WEBHOOK_GLOBAL_URL}
+      WEBHOOK_GLOBAL_WEBHOOK_BY_EVENTS: "true"
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - evo
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: evo-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: evolution
+      POSTGRES_USER: evo
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - evo-pgdata:/var/lib/postgresql/data
+    networks:
+      - evo
+
+  redis:
+    image: redis:7-alpine
+    container_name: evo-redis
+    restart: unless-stopped
+    volumes:
+      - evo-redisdata:/data
+    networks:
+      - evo
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: evo-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - evolution-api
+    networks:
+      - evo
+
+networks:
+  evo:
+
+volumes:
+  evo-pgdata:
+  evo-redisdata:
+  caddy-data:
+  caddy-config:

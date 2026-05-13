@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { nanoid } from "nanoid";
 
 import { createClient } from "@/lib/supabase/server";
+import { dispararOSPronta } from "@/features/whatsapp/disparos";
 import {
   mudarStatusPecaSchema,
   mudarStatusSchema,
@@ -189,6 +190,18 @@ export async function mudarStatus(
       .update({ km_atual: opts.km_saida })
       .eq("id", current.veiculo_id)
       .lt("km_atual", opts.km_saida);
+  }
+
+  if (novoStatus === "pronta") {
+    try {
+      const disparo = await dispararOSPronta(supabase, { osId: id });
+      if (!disparo.ok && disparo.reason !== "skip") {
+        console.warn("dispararOSPronta:", disparo);
+      }
+    } catch (err) {
+      // Disparo é best-effort — não bloqueia mudança de status.
+      console.error("dispararOSPronta erro:", err);
+    }
   }
 
   revalidateOS(id);

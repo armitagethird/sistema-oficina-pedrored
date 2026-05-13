@@ -4,7 +4,11 @@
 
 ## Status
 
-⚪ Pendente.
+🟢 Implementada em `sprint-05-whatsapp` (commits Onda 1–4). Aguardando:
+- VPS Evolution provisionada via `infra/evolution/RUNBOOK.md`.
+- `EVOLUTION_API_URL/KEY/INSTANCE_NAME` + `WHATSAPP_WEBHOOK_SECRET` em Vercel.
+- `pnpm db:migrate` + `pnpm db:gen` no remoto (cria tabelas whatsapp_*).
+- Validação de Pedro (cobertura manual abaixo).
 
 ## Contexto
 
@@ -469,7 +473,24 @@ src/
 
 ## Progresso
 
-(atualize)
+- **Onda 1** ✅ — Migration `20260715000000_init_whatsapp.sql` + cliente Evolution
+  (`evolution-client.ts`) + template engine (`renderTemplate` com validação de
+  placeholders) + `enviarMensagemCore` reutilizável + actions/queries.
+  25 testes unit novos, total 201 passando.
+- **Onda 2** ✅ — Páginas `/app/whatsapp` (status + KPIs), `/conversas[/clienteId]`,
+  `/templates[/tipo]` com preview live, `/configuracoes` (kill-switch +
+  intervalos óleo + histórico jobs). Componentes em `features/whatsapp/components/`.
+  Botão "Enviar PIX por WhatsApp" no detalhe OS quando cliente tem telefone e
+  total > 0. Hook em `mudarStatus(id, 'pronta')` dispara template `os_pronta`
+  best-effort. Menu Mais ganha item WhatsApp.
+- **Onda 3** ✅ — Webhook `/api/whatsapp/webhook` (Evolution → DB) + 3 crons
+  (`lembrete-d1` 21UTC, `cobranca-atraso` 13UTC, `lembrete-oleo-km` 14UTC seg)
+  com idempotência via `whatsapp_jobs_cron(tipo, alvo_id, marco)`. Atualização
+  do `vercel.json` e `.env.local.template`.
+- **Onda 4** ✅ — `infra/evolution/{docker-compose.yml, caddy/Caddyfile, .env.example, RUNBOOK.md}`
+  com stack Caddy+Postgres+Redis+Evolution. E2E smoke em
+  `e2e/sprint-05-whatsapp.spec.ts` (skip sem creds). Docs atualizadas:
+  `00-overview.md`, `data-model.md`, `deploy.md`.
 
 ## Referências
 

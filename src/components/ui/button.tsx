@@ -19,6 +19,12 @@ const buttonVariants = cva(
         ghost:
           "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
         link: "text-primary underline-offset-4 hover:underline",
+        editorial:
+          "rounded-none border-2 border-foreground bg-foreground text-background uppercase tracking-[0.18em] font-medium hover:bg-transparent hover:text-foreground transition-colors",
+        "editorial-outline":
+          "rounded-none border-2 border-foreground bg-transparent text-foreground uppercase tracking-[0.18em] font-medium hover:bg-foreground hover:text-background transition-colors",
+        "editorial-red":
+          "rounded-none border-2 border-[color:var(--accent-red)] bg-[color:var(--accent-red)] text-white uppercase tracking-[0.18em] font-medium hover:bg-transparent hover:text-[color:var(--accent-red)] transition-colors",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",

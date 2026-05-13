@@ -6,13 +6,13 @@
 
 ## Estado atual
 
-**Sprints 0/1/2/3/6 aplicados em 2026-05-11. Suplemento Sprint 6 (sob encomenda + auto-esgotado) aplicado em 2026-05-11.** Schema no Supabase remoto (`fcaxivdvhgekomvwbrvr`, region `sa-east-1`).
+**Sprints 0/1/2/3/6 aplicados em 2026-05-11. Suplemento Sprint 6 (sob encomenda + auto-esgotado) aplicado em 2026-05-11. Sprint 5 (WhatsApp) implementada — migration `20260715000000_init_whatsapp.sql` pendente de `pnpm db:migrate` no remoto.** Schema no Supabase remoto (`fcaxivdvhgekomvwbrvr`, region `sa-east-1`).
 
 ### Tabelas
 
 - **`vw_modelos`** (24 rows seed) — `id uuid`, `modelo text`, `motor text`, `combustivel text default 'flex'`, `ano_inicio int?`, `ano_fim int?`, `criado_em timestamptz`. `unique(modelo, motor)`. RLS: `vw_modelos_authenticated_all` (authenticated→ALL). Index: `idx_vw_modelos_modelo`.
 - **`clientes`** — `id uuid`, `nome text not null`, `telefone text?`, `email text?`, `cpf text?`, `endereco jsonb?` (`{rua, numero, bairro, cidade, cep, complemento}`), `observacoes text?`, `criado_em`, `atualizado_em` (trigger `set_atualizado_em`), `deletado_em timestamptz?` (soft delete). RLS: `clientes_authenticated_all`. Indexes parciais (`where deletado_em is null`): `idx_clientes_nome`, `idx_clientes_telefone`.
-- **`veiculos`** — `id uuid`, `cliente_id uuid not null` → `clientes(id) ON DELETE RESTRICT`, `modelo_id uuid?` → `vw_modelos(id) ON DELETE SET NULL`, `modelo_custom text?`, `motor text?`, `ano int?`, `placa text?`, `cor text?`, `km_atual int default 0`, `observacoes text?`, timestamps + soft delete. Constraint check: `modelo_id IS NOT NULL OR modelo_custom IS NOT NULL`. RLS: `veiculos_authenticated_all`. Indexes parciais: `idx_veiculos_cliente`, `idx_veiculos_placa`.
+- **`veiculos`** — `id uuid`, `cliente_id uuid not null` → `clientes(id) ON DELETE RESTRICT`, `modelo_id uuid?` → `vw_modelos(id) ON DELETE SET NULL`, `modelo_custom text?`, `motor text?`, `ano int?`, `placa text?`, `cor text?`, `km_atual int default 0`, `km_ultima_troca_oleo int?` (Sprint 5), `data_ultima_troca_oleo date?` (Sprint 5), `km_proxima_troca_oleo int?` (Sprint 5 — usado pelo cron lembrete-oleo-km), `observacoes text?`, timestamps + soft delete. Constraint check: `modelo_id IS NOT NULL OR modelo_custom IS NOT NULL`. RLS: `veiculos_authenticated_all`. Indexes parciais: `idx_veiculos_cliente`, `idx_veiculos_placa`.
 - **`ordens_servico`** — `id uuid`, `numero serial unique`, `cliente_id uuid not null` → `clientes(id) ON DELETE RESTRICT`, `veiculo_id uuid not null` → `veiculos(id) ON DELETE RESTRICT`, `status os_status not null default 'aberta'`, `descricao_problema text not null`, `km_entrada int?`, `km_saida int?`, `total_servicos/total_pecas/total_geral numeric(12,2) default 0` (denormalizados via trigger), `observacoes text?`, timestamps + soft delete, `fechado_em timestamptz?` (preenchido via trigger ao virar `entregue`). RLS: `os_authenticated_all`. Indexes parciais por status, cliente, veiculo, criado_em desc.
 - **`os_servicos`** — `id uuid`, `os_id uuid not null` → `ordens_servico(id) ON DELETE CASCADE`, `descricao text`, `valor_unitario numeric(12,2) check >= 0`, `quantidade numeric(8,2) check > 0`, `subtotal numeric(12,2) generated stored = valor_unitario * quantidade`, `ordem int default 0`, `criado_em`. RLS authenticated. Index `idx_os_servicos_os`.
 - **`os_pecas`** — `id uuid`, `os_id uuid not null cascade`, `descricao text`, `origem peca_origem default 'fornecedor'`, `custo_unitario / preco_venda_unitario numeric(12,2)`, `quantidade numeric(8,2) > 0`, `subtotal_venda numeric(12,2) generated stored`, `link_ml text?`, `fornecedor_nome text?` (FK estruturada vem na Sprint 2), `item_estoque_id uuid?` → `itens_estoque(id) ON DELETE SET NULL` (Sprint 3), `status peca_status default 'pendente'`, `ordem int`, `criado_em`. RLS authenticated. Indexes `idx_os_pecas_os`, `idx_os_pecas_status`, `idx_os_pecas_item_estoque` (parcial). Trigger `trg_os_pecas_estoque` baixa/estorna estoque quando `origem='estoque'` e `item_estoque_id` está presente (Sprint 3).
@@ -28,6 +28,9 @@
 - **`produtos_loja`** (Sprint 6) — `id uuid`, `item_estoque_id uuid?` → `itens_estoque(id) ON DELETE SET NULL`, `titulo text not null`, `slug text not null unique` (gerado por `gerar_slug_unico`), `descricao text?`, `fotos jsonb default '[]'` (array de URLs públicas), `preco numeric(12,2) check >= 0`, `preco_promocional numeric(12,2)?`, `estoque_manual int?`, `frete_info text?`, `status produto_status default 'ativo'`, `destaque bool default false`, `ordem_destaque int default 0`, `somente_sob_encomenda bool not null default false` (suplemento 2026-05-11), `metadata jsonb default '{}'`, timestamps. Constraint `produtos_loja_sob_encomenda_sem_estoque check (somente_sob_encomenda = false or item_estoque_id is null)`. RLS: `produtos_loja_publico_select_ativos` (anon+auth SELECT onde status='ativo') + `produtos_loja_admin_all`. Indexes: status, slug, gin tsv(titulo), parcial destaque. Trigger `trg_produtos_atualizado_em`.
 - **`pedidos_loja`** (Sprint 6) — `id uuid`, `numero serial unique`, `cliente_nome/telefone/email?/endereco jsonb`, `valor_subtotal/valor_frete/valor_total numeric(12,2)`, `metodo_pagamento text default 'pix'`, `comprovante_url text?` (path no bucket `loja-comprovantes`), `status pedido_loja_status default 'aguardando_pagamento'`, `observacoes_cliente/_internas text?`, timestamps + `pago_em/enviado_em timestamptz?`. RLS: `pedidos_loja_admin_all` apenas (inserts via server action com service_role; reads públicos via server action `getPedidoPublico` validando telefone). Indexes em status, criado_em desc, telefone. Trigger `trg_pedidos_loja_atualizado_em`.
 - **`itens_pedido_loja`** (Sprint 6) — `id uuid`, `pedido_id uuid not null` → `pedidos_loja(id) ON DELETE CASCADE`, `produto_id uuid not null` → `produtos_loja(id) ON DELETE RESTRICT`, `titulo_snapshot text not null`, `preco_unitario numeric(12,2) not null`, `quantidade int > 0`, `subtotal numeric(12,2) generated stored = preco_unitario * quantidade`, `criado_em`. RLS `itens_pedido_loja_admin_all`. Index `idx_itens_pedido_loja(pedido_id)`.
+- **`whatsapp_templates`** (Sprint 5) — `tipo whatsapp_template_tipo primary key`, `template_texto text not null`, `ativo bool default true`, `descricao text?`, `atualizado_em timestamptz` (trigger). Seed com 7 templates: `lembrete_d1`, `os_pronta`, `cobranca_atraso_{3,7,15}`, `lembrete_oleo_km`, `manual`. Placeholders aceitos validados pelo engine `renderTemplate` (`{{primeiro_nome}}`, `{{data}}`, `{{periodo}}`, `{{valor}}`, `{{pix_chave}}`, `{{os_numero}}`, `{{km_estimado}}`, `{{dias_atraso}}`, `{{texto}}`, `{{nome}}`). RLS `wa_templates_authenticated_all`.
+- **`whatsapp_msgs`** (Sprint 5) — `id uuid`, `cliente_id uuid?` → `clientes(id) ON DELETE SET NULL`, `telefone text not null`, `direcao whatsapp_direcao` (in/out), `template_tipo whatsapp_template_tipo?`, `conteudo text`, `status whatsapp_msg_status` (pendente/enviada/entregue/lida/falhou), `evolution_msg_id text?`, `os_id/agendamento_id/pagamento_id` FKs opcionais (ON DELETE SET NULL), `payload_raw jsonb?`, `erro text?`, timestamps. Indexes em cliente (parcial), telefone, direcao, criado_em desc, evolution_msg_id (parcial). RLS `wa_msgs_authenticated_all`. Trigger `set_atualizado_em`.
+- **`whatsapp_jobs_cron`** (Sprint 5) — `id uuid`, `tipo whatsapp_job_tipo` (lembrete_d1/cobranca_atraso/lembrete_oleo_km), `alvo_id uuid not null`, `marco text not null`, `msg_id uuid?` → `whatsapp_msgs(id) ON DELETE SET NULL`, `sucesso bool`, `erro text?`, `criado_em`. `UNIQUE(tipo, alvo_id, marco)` garante idempotência. RLS `wa_jobs_authenticated_all`.
 
 ### Enums (Sprint 1)
 
@@ -51,6 +54,13 @@
 
 - `produto_status` — `ativo | inativo | esgotado`
 - `pedido_loja_status` — `aguardando_pagamento | pagamento_em_analise | pago | em_separacao | enviado | retirado | cancelado`
+
+### Enums (Sprint 5)
+
+- `whatsapp_direcao` — `in | out`
+- `whatsapp_msg_status` — `pendente | enviada | entregue | lida | falhou`
+- `whatsapp_template_tipo` — `lembrete_d1 | os_pronta | cobranca_atraso_3 | cobranca_atraso_7 | cobranca_atraso_15 | lembrete_oleo_km | manual`
+- `whatsapp_job_tipo` — `lembrete_d1 | cobranca_atraso | lembrete_oleo_km`
 
 ### Funções / triggers (Sprint 1)
 
@@ -236,14 +246,19 @@ Tabelas:
 ### Sprint 5 — WhatsApp
 
 Enums:
-- `whatsapp_msg_direcao` — `in | out`
-- `whatsapp_msg_status` — `enviada | entregue | lida | falhou`
-- `whatsapp_template_tipo` — `lembrete_d1 | os_pronta | cobranca_atraso | lembrete_oleo_km | manual`
+- `whatsapp_direcao` — `in | out`
+- `whatsapp_msg_status` — `pendente | enviada | entregue | lida | falhou`
+- `whatsapp_template_tipo` — `lembrete_d1 | os_pronta | cobranca_atraso_3 | cobranca_atraso_7 | cobranca_atraso_15 | lembrete_oleo_km | manual`
+- `whatsapp_job_tipo` — `lembrete_d1 | cobranca_atraso | lembrete_oleo_km`
 
 Tabelas:
-- `whatsapp_msgs` — cliente_id, telefone, direcao, conteudo, template_tipo, status, evolution_msg_id, payload_raw jsonb, criado_em
-- `whatsapp_templates` — tipo, template_texto (com placeholders {{nome}}, {{data}}, {{valor}}, {{pix}}), ativo, atualizado_em
-- `whatsapp_jobs_cron` — log de execução dos jobs automáticos (qual cliente, qual ação, sucesso/falha)
+- `whatsapp_templates` — tipo (PK enum), template_texto, ativo, descricao, atualizado_em. Seed com 7 templates.
+- `whatsapp_msgs` — cliente_id, telefone, direcao, template_tipo, conteudo, status, evolution_msg_id, os_id, agendamento_id, pagamento_id, payload_raw jsonb, erro, timestamps.
+- `whatsapp_jobs_cron` — tipo, alvo_id, marco (`d-1`/`3_dias`/`oleo-YYYY-MM`...), msg_id, sucesso, erro, criado_em. `UNIQUE(tipo, alvo_id, marco)` para idempotência.
+
+Mudanças em outras tabelas:
+- `veiculos` ganha `km_ultima_troca_oleo int`, `data_ultima_troca_oleo date`, `km_proxima_troca_oleo int` (usados pelo cron lembrete-oleo-km).
+- `settings` recebe novas chaves: `whatsapp_envios_ativos` (kill-switch global), `whatsapp_oleo_km_intervalo` (default 10000), `whatsapp_oleo_km_antecedencia` (default 500), `whatsapp_oleo_km_dia` (default 30).
 
 ### Sprint 6 — PedroRed Store (loja pública)
 

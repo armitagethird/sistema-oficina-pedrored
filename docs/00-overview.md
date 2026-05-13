@@ -10,12 +10,14 @@
 | 1 | Core OS | ✅ validada | — | ✅ Romero (proxy) 2026-05-11 |
 | 2 | Financeiro | ✅ validada | `sprint-02-financeiro` → main (PR #1) | ✅ Romero (proxy) 2026-05-11 |
 | 3 | Estoque | 🟢 implementada | `sprint-03-06` | aguardando Pedro |
-| 4 | Agenda | ⚪ pendente | — | — |
-| 5 | WhatsApp (Evolution API) | ⚪ pendente | — | — |
+| 4 | Agenda | 🟢 implementada | `sprint-04-agenda` | aguardando Pedro |
+| 5 | WhatsApp (Evolution API) | 🟢 implementada | `sprint-05-whatsapp` | aguardando Pedro + VPS Evolution |
 | 6 | PedroRed Store (pública) | 🟢 implementada | `sprint-03-06` | aguardando Pedro |
 | 7 | IA + Dashboards | ⚪ pendente | — | — |
 
 **Sprints 3 e 6 implementadas em `sprint-03-06` (PR único pendente).** Notificações WhatsApp da Sprint 6 ficaram como `TODO(sprint-5)` no código. PIX e domínio da loja com placeholders (`.env.local.template`) — Pedro plugga valores reais antes da validação em produção.
+
+**Sprint 5 (WhatsApp) implementada em `sprint-05-whatsapp`.** Antes de Pedro validar é preciso: (a) subir Evolution na VPS via `infra/evolution/RUNBOOK.md`, (b) parear chip dedicado por QR, (c) configurar `EVOLUTION_API_URL/KEY/INSTANCE_NAME` e `WHATSAPP_WEBHOOK_SECRET` em Vercel, (d) aplicar migration `20260715000000_init_whatsapp.sql` em Supabase remoto (`pnpm db:migrate` + `pnpm db:gen`).
 
 **Deploy de produção:** https://sistema-oficina-pedrored.vercel.app/ (Vercel, conectado a `armitagethird/sistema-oficina-pedrored` em GitHub).
 
