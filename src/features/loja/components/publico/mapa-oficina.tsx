@@ -1,6 +1,4 @@
-import { ArrowRightIcon, MapPinIcon } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
+import { ArrowRightIcon } from "lucide-react";
 
 import {
   CONTATO,
@@ -10,62 +8,65 @@ import {
 } from "../../contato";
 
 export function MapaOficina() {
-  const { logradouro, bairro, cidade, estado, cep } = CONTATO.endereco;
+  const { logradouro, bairro, cidade, estado } = CONTATO.endereco;
 
   return (
-    <section className="border-t bg-muted/20">
-      <div className="mx-auto grid max-w-6xl gap-6 px-4 py-10 md:grid-cols-[1fr_1.2fr] md:items-stretch md:gap-8 md:px-6 md:py-14">
-        <div className="flex flex-col gap-4 md:justify-center">
-          <div className="flex flex-col gap-2">
-            <span className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-red-500">
-              <MapPinIcon className="size-4" />
-              Visite a oficina
-            </span>
-            <h2 className="text-xl font-semibold tracking-tight md:text-2xl">
-              {cidade} — {estado}
+    <section className="dark relative border-t border-white/10 bg-neutral-950 text-white">
+      <div className="mx-auto max-w-7xl px-4 py-12 md:px-8 md:py-16">
+        <header className="mb-6 flex flex-wrap items-end justify-between gap-4 md:mb-8">
+          <div className="flex flex-col gap-3">
+            <span className="eyebrow">§ VISITE A OFICINA</span>
+            <h2 className="text-display text-4xl uppercase leading-[0.9] md:text-5xl lg:text-6xl">
+              {cidade}{" "}
+              <span className="text-[color:var(--accent-red)]">
+                / {estado}
+              </span>
             </h2>
-            <p className="text-sm text-muted-foreground">
-              Pra orçamento presencial, retirada de peças ou serviço na linha
-              Volkswagen TSI/MSI.
-            </p>
           </div>
+          <a
+            href={CONTATO.whatsapp.href}
+            target="_blank"
+            rel="noreferrer"
+            className="text-display inline-flex items-center gap-2 text-sm uppercase tracking-[0.2em] text-white transition-colors hover:text-[color:var(--accent-red)]"
+          >
+            Falar no WhatsApp
+            <ArrowRightIcon className="size-4" />
+          </a>
+        </header>
 
-          <address className="not-italic text-sm leading-relaxed text-muted-foreground">
-            {logradouro}
-            <br />
-            {bairro}, {cidade} — {estado}
-            <br />
-            CEP {cep}
-          </address>
-
-          <div className="flex flex-wrap gap-2">
-            <Button asChild size="sm">
-              <a href={getMapsUrl()} target="_blank" rel="noreferrer">
-                Abrir no Google Maps
-                <ArrowRightIcon className="ml-1 size-4" />
-              </a>
-            </Button>
-            <Button asChild variant="outline" size="sm">
-              <a
-                href={CONTATO.whatsapp.href}
-                target="_blank"
-                rel="noreferrer"
-              >
-                Combinar visita
-              </a>
-            </Button>
-          </div>
-        </div>
-
-        <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
+        <a
+          href={getMapsUrl()}
+          target="_blank"
+          rel="noreferrer"
+          aria-label={`Abrir endereço no Google Maps: ${getEnderecoCompleto()}`}
+          className="group relative block aspect-[4/5] w-full overflow-hidden border-2 border-white/15 transition-colors hover:border-white/40 sm:aspect-[4/3] md:aspect-[16/9] lg:aspect-[21/9]"
+        >
           <iframe
             src={getMapsEmbedUrl()}
             title={`Mapa: ${getEnderecoCompleto()}`}
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
-            className="aspect-[4/3] w-full md:aspect-auto md:h-full md:min-h-[280px]"
+            className="pointer-events-none h-full w-full grayscale transition-[filter] duration-500 group-hover:grayscale-0"
+            tabIndex={-1}
+            aria-hidden
           />
-        </div>
+          <span aria-hidden className="absolute inset-0" />
+
+          <div className="absolute bottom-3 left-3 max-w-[min(75%,260px)] border border-white/15 bg-neutral-950/85 px-3 py-2 backdrop-blur md:bottom-6 md:left-6 md:max-w-[400px] md:px-6 md:py-5 lg:max-w-[440px]">
+            <span className="eyebrow text-[0.6rem] text-white/55 md:text-[0.75rem]">
+              § Endereço
+            </span>
+            <p className="mt-1 text-xs leading-snug text-white md:mt-2 md:text-lg md:leading-tight lg:text-xl">
+              {logradouro}
+              <br />
+              {bairro} · {cidade}/{estado}
+            </p>
+            <span className="text-display mt-1.5 inline-flex items-center gap-1.5 text-[0.6rem] uppercase tracking-[0.18em] text-white/70 transition-colors group-hover:text-[color:var(--accent-red)] md:mt-3 md:gap-2 md:text-[0.8rem] md:tracking-[0.22em]">
+              Abrir no Maps
+              <ArrowRightIcon className="size-3 md:size-4" />
+            </span>
+          </div>
+        </a>
       </div>
     </section>
   );

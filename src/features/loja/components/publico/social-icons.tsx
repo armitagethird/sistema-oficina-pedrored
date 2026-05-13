@@ -37,3 +37,24 @@ export function InstagramIcon({ className, ...rest }: IconProps) {
     </svg>
   );
 }
+
+export function VolkswagenIcon({ className, ...rest }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 64 64"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="3.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      role="img"
+      aria-label="Volkswagen"
+      className={className}
+      {...rest}
+    >
+      <circle cx="32" cy="32" r="29" />
+      <path d="M18 12 L32 32 L46 12" />
+      <path d="M10 32 L22 52 L32 32 L42 52 L54 32" />
+    </svg>
+  );
+}

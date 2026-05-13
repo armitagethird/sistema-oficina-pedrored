@@ -5,110 +5,75 @@ import { ArrowRightIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import { CONTATO } from "../../contato";
-import type { VideoYoutube } from "../../youtube";
-import { VideoRow } from "./canal-youtube";
 
 const HERO_IMAGE = "/pedrored-hero.jpg";
 const HERO_ALT = "Pedro, mecânico responsável pela PedroRed";
 
-function HeroContent() {
+export function Hero() {
   return (
-    <div className="flex max-w-xl flex-col gap-3">
-      <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
-        <span className="text-foreground">Pedro</span>
-        <span className="text-red-500">Red</span>
-        <span className="text-foreground"> Store</span>
-      </h1>
-      <p className="text-base text-muted-foreground md:text-lg">
-        Peças e materiais selecionados pelo seu mecânico favorito.
-      </p>
-      <div className="flex flex-wrap gap-2">
-        <Button asChild size="lg">
-          <Link href="/produtos">
-            Ver catálogo
-            <ArrowRightIcon className="ml-1 size-4" />
-          </Link>
-        </Button>
-        <Button asChild variant="outline" size="lg">
-          <a href={CONTATO.whatsapp.href} target="_blank" rel="noreferrer">
-            Falar no WhatsApp
-          </a>
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-export function Hero({ videos = [] }: { videos?: VideoYoutube[] }) {
-  const videosNoHero = videos.slice(0, 3);
-
-  return (
-    <section className="border-b">
-      {/* Mobile: full-bleed com foto de fundo + gradiente */}
-      <div className="relative isolate overflow-hidden md:hidden">
+    <section className="dark relative isolate overflow-hidden bg-neutral-950 text-white">
+      <div className="relative aspect-[4/5] w-full sm:aspect-[16/10] md:aspect-[21/9] lg:aspect-[16/7] lg:max-h-[72dvh] xl:aspect-[16/7] xl:max-h-[74dvh]">
         <Image
           src={HERO_IMAGE}
           alt={HERO_ALT}
           fill
           sizes="100vw"
           priority
-          className="absolute inset-0 -z-20 object-cover object-[center_30%]"
+          className="object-cover object-[60%_22%] md:object-[72%_25%]"
         />
         <div
           aria-hidden
-          className="absolute inset-0 -z-10 bg-gradient-to-t from-background via-background/85 to-background/30"
+          className="absolute inset-0 bg-gradient-to-r from-neutral-950 via-neutral-950/80 to-transparent md:from-neutral-950/95 md:via-neutral-950/55 md:to-transparent"
         />
-        <div className="mx-auto flex min-h-[520px] max-w-6xl flex-col justify-end px-4 py-12">
-          <HeroContent />
-        </div>
-      </div>
+        <div
+          aria-hidden
+          className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-neutral-950 via-neutral-950/70 to-transparent md:h-1/3"
+        />
 
-      {/* Desktop: título full-width + grid foto/vídeos integrado, dimensionado pra deixar peek do conteúdo abaixo */}
-      <div className="hidden md:block">
-        <div className="mx-auto max-w-6xl px-6 py-8">
-          <div className="mb-6">
-            <HeroContent />
-          </div>
-
-          <div className="grid grid-cols-[0.9fr_1.1fr] gap-8">
-            <div className="relative h-[400px] overflow-hidden rounded-xl border bg-muted shadow-sm">
-              <Image
-                src={HERO_IMAGE}
-                alt={HERO_ALT}
-                fill
-                sizes="(min-width: 1024px) 440px, 50vw"
-                priority
-                className="object-cover object-[center_15%]"
-              />
+        <div className="absolute inset-0 mx-auto flex max-w-7xl flex-col justify-end px-4 pb-6 md:justify-center md:px-8 md:pb-0">
+          <div className="flex max-w-2xl flex-col gap-5 md:gap-7">
+            <span className="eyebrow text-white/85">
+              § PEDRORED · STORE
+            </span>
+            <h1 className="text-display text-[3rem] uppercase leading-[0.82] tracking-tight sm:text-6xl md:text-[4.5rem] lg:text-[6rem] xl:text-[7.5rem]">
+              Pedro
+              <br />
+              <span className="text-[color:var(--accent-red)]">Red</span>
+              <br />
+              <span className="text-white/90">Store</span>
+            </h1>
+            <p className="max-w-md text-base leading-relaxed text-white/85 md:text-lg">
+              Peças selecionadas pelo seu mecânico favorito.
+            </p>
+            <div className="flex items-stretch gap-2 sm:gap-3">
+              <Button
+                asChild
+                variant="editorial"
+                size="lg"
+                className="flex-1 rounded-none px-3 sm:flex-none sm:px-8"
+              >
+                <Link href="/produtos">
+                  <span className="sm:hidden">Catálogo</span>
+                  <span className="hidden sm:inline">Ver catálogo</span>
+                  <ArrowRightIcon className="ml-1 size-4" />
+                </Link>
+              </Button>
+              <Button
+                asChild
+                variant="editorial-outline"
+                size="lg"
+                className="flex-1 rounded-none px-3 sm:flex-none sm:px-8"
+              >
+                <a
+                  href={CONTATO.whatsapp.href}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <span className="sm:hidden">WhatsApp</span>
+                  <span className="hidden sm:inline">Falar no WhatsApp</span>
+                </a>
+              </Button>
             </div>
-
-            {videosNoHero.length > 0 ? (
-              <div className="flex flex-col gap-3">
-                <header className="flex items-baseline justify-between gap-3">
-                  <div className="flex flex-col">
-                    <h2 className="text-base font-semibold tracking-tight">
-                      Pedro no YouTube
-                    </h2>
-                    <span className="text-xs text-muted-foreground">
-                      Bastidores, reviews e tunagem TSI/MSI
-                    </span>
-                  </div>
-                  <a
-                    href={CONTATO.youtube.canal}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex shrink-0 items-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    Ver canal <ArrowRightIcon className="size-4" />
-                  </a>
-                </header>
-                <div className="flex flex-col gap-3">
-                  {videosNoHero.map((video) => (
-                    <VideoRow key={video.id} video={video} />
-                  ))}
-                </div>
-              </div>
-            ) : null}
           </div>
         </div>
       </div>

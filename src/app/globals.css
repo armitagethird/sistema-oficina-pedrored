@@ -25,6 +25,12 @@
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
   --radius: 0.625rem;
+
+  /* Editorial — motorsport magazine palette */
+  --accent-red: oklch(0.58 0.22 25);
+  --graphite: oklch(0.22 0.01 250);
+  --paper: oklch(0.97 0.005 80);
+  --hairline: oklch(0.85 0 0);
 }
 
 .dark {
@@ -47,6 +53,12 @@
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);
+
+  /* Editorial — motorsport magazine palette (dark) */
+  --accent-red: oklch(0.65 0.21 25);
+  --graphite: oklch(0.18 0.01 250);
+  --paper: oklch(0.94 0.005 80);
+  --hairline: oklch(1 0 0 / 15%);
 }
 
 @theme inline {
@@ -69,7 +81,12 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-accent-red: var(--accent-red);
+  --color-graphite: var(--graphite);
+  --color-paper: var(--paper);
+  --color-hairline: var(--hairline);
   --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -82,5 +99,50 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .bg-checker-pattern {
+    --checker-size: 16px;
+    background-image:
+      linear-gradient(45deg, currentColor 25%, transparent 25%),
+      linear-gradient(-45deg, currentColor 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, currentColor 75%),
+      linear-gradient(-45deg, transparent 75%, currentColor 75%);
+    background-size: var(--checker-size) var(--checker-size);
+    background-position:
+      0 0,
+      0 calc(var(--checker-size) / 2),
+      calc(var(--checker-size) / 2) calc(var(--checker-size) / -2),
+      calc(var(--checker-size) / -2) 0;
+    color: var(--foreground);
+  }
+
+  .font-display {
+    font-family: var(--font-display), "Bebas Neue", "Arial Narrow", system-ui, sans-serif;
+  }
+
+  .text-display {
+    font-family: var(--font-display), "Bebas Neue", "Arial Narrow", system-ui, sans-serif;
+    letter-spacing: -0.005em;
+  }
+
+  .text-num {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1, "lnum" 1;
+  }
+
+  .eyebrow {
+    font-size: 0.6875rem;
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    font-weight: 500;
+    color: var(--accent-red);
+  }
+
+  .rule-hairline {
+    border-color: var(--hairline);
   }
 }
